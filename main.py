@@ -46,6 +46,30 @@ def reduce(image, num_colors=2):
     return segmented_image
 
 
+def get_darkest_color(image):
+    gray_img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+
+    # Find the coordinates of the darkest pixel
+    min_intensity_coord = np.unravel_index(np.argmin(gray_img), gray_img.shape)
+
+    # Get the color of the darkest pixel in BGR format
+    darkest_color = image[min_intensity_coord]
+    return darkest_color
+    pass
+
+
+def replace_color(image, old_background_color, new_background_color):
+
+    new_image = image.copy()
+    for x in range(image.shape[0]):
+        for y in range(image.shape[1]):
+            if np.all(image[x, y] == old_background_color):
+                new_image[x, y] = new_background_color
+
+    return new_image
+    pass
+
+
 class image_processing:
 
 
@@ -127,6 +151,43 @@ class image_processing:
         self.print_status()
         return None
 
+    def replace_darkest_color(self, new_color=(0,0,0)):
+        folders_edited = {}
+
+        for folder_name in self.folders:
+            images = self.folders[folder_name]
+
+            images_edited = []
+            for image in images:
+                old_background_color = get_darkest_color(image)
+                edited_image = replace_color(image, old_background_color,new_color)
+                images_edited.append(edited_image)
+
+            folders_edited.update({folder_name: images_edited})
+            images.extend(images_edited)
+
+        self.folders = folders_edited
+        self.print_status()
+        return None
+
+    def reduce_colors(self, colors=2):
+        folders_edited = {}
+
+        for folder_name in self.folders:
+            images = self.folders[folder_name]
+
+            images_edited = []
+            for image in images:
+                images_edited.append(reduce(image, colors))
+
+            folders_edited.update({folder_name: images_edited})
+            images.extend(images_edited)
+
+        self.folders = folders_edited
+        self.print_status()
+        return None
+
+
 
 def save_img(image, directory, filename) -> None:
     if not os.path.exists(directory):
@@ -151,8 +212,8 @@ def main():
     processor = image_processing()
     processor.load_images("data")
     processor.reduce_colors(2)
+    processor.replace_darkest_color(new_color=(0,0,0))
     #processor.rotate() #TODO
-    processor.mirror()
     processor.save("data")
 
 
