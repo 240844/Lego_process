@@ -1,14 +1,49 @@
 import cv2
 import os
 
+import numpy as np
+
+
 def decrease_resolution(img, step=10):
     img = img[::step, ::step]
     return img
 
-def treshold(image):
-    gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-    ret, thresh = cv2.threshold(gray, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
+def treshold(gray_image):
+    ret, thresh = cv2.threshold(gray_image, 0, 255, cv2.THRESH_BINARY_INV + cv2.THRESH_OTSU)
     return thresh
+
+
+def rgb_to_grayscale(image):
+    b, g, r = cv2.split(image)
+
+    grayscale_image = 0.299 * r + 0.587 * g + 0.114 * b
+
+    grayscale_image = np.uint8(grayscale_image)
+
+    return grayscale_image
+
+
+def reduce(image, num_colors=2):
+    pixels = image.reshape((-1, 3))
+
+    # Convert to float type
+    pixels = np.float32(pixels)
+
+    # Define criteria for k-means
+    criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2)
+
+    # Apply k-means clustering
+    _, labels, centers = cv2.kmeans(pixels, num_colors, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
+
+    # Convert back to 8-bit values
+    centers = np.uint8(centers)
+
+    # Map the labels to the centers
+    segmented_image = centers[labels.flatten()]
+
+    # Reshape back to the original image shape
+    segmented_image = segmented_image.reshape(image.shape)
+    return segmented_image
 
 
 class image_processing:
@@ -28,7 +63,7 @@ class image_processing:
             for name in os.listdir(folder_name_):
                 name = f'{folder_name_}/{name}'
                 image = cv2.imread(name)
-                image = decrease_resolution(image, 6)
+                image = decrease_resolution(image, 3)
                 images.append(image)
             self.folders.update({folder_name: images})
 
@@ -65,7 +100,7 @@ class image_processing:
                 dir = cdir + "\\" + self.directory_path + "_processed\\" + folder_name
                 filename = folder_name + "_" + str(i) + ".png"
 
-                print(dir + "\\" + filename)
+                #print(dir + "\\" + filename)
                 save_img(image, dir, filename)
 
         print("saved")
@@ -80,7 +115,10 @@ class image_processing:
 
             images_tresholded = []
             for image in images:
-                images_tresholded.append(treshold(image))
+
+                gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+                tresholded = treshold(gray_image)
+                images_tresholded.append(tresholded)
 
             folders_tresholded.update({folder_name: images_tresholded})
             images.extend(images_tresholded)
@@ -112,10 +150,8 @@ def make_new_dir(new_dir) -> None:
 def main():
     processor = image_processing()
     processor.load_images("data")
-    #processor.remove_highlights() #TODO
-    #processor.uniform_background() #TODO
+    processor.reduce_colors(2)
     #processor.rotate() #TODO
-    processor.auto_treshold()
     processor.mirror()
     processor.save("data")
 
