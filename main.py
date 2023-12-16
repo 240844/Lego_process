@@ -112,6 +112,9 @@ def make_new_dir(new_dir) -> None:
 def main():
     processor = image_processing()
     processor.load_images("data")
+    #processor.remove_highlights() #TODO
+    #processor.uniform_background() #TODO
+    #processor.rotate() #TODO
     processor.auto_treshold()
     processor.mirror()
     processor.save("data")
