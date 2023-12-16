@@ -25,37 +25,20 @@ def rgb_to_grayscale(image):
 
 def reduce(image, num_colors=2):
     pixels = image.reshape((-1, 3))
-
-    # Convert to float type
     pixels = np.float32(pixels)
-
-    # Define criteria for k-means
     criteria = (cv2.TERM_CRITERIA_EPS + cv2.TERM_CRITERIA_MAX_ITER, 100, 0.2)
-
-    # Apply k-means clustering
     _, labels, centers = cv2.kmeans(pixels, num_colors, None, criteria, 10, cv2.KMEANS_RANDOM_CENTERS)
-
-    # Convert back to 8-bit values
     centers = np.uint8(centers)
-
-    # Map the labels to the centers
     segmented_image = centers[labels.flatten()]
-
-    # Reshape back to the original image shape
     segmented_image = segmented_image.reshape(image.shape)
     return segmented_image
 
 
 def get_darkest_color(image):
     gray_img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
-    # Find the coordinates of the darkest pixel
     min_intensity_coord = np.unravel_index(np.argmin(gray_img), gray_img.shape)
-
-    # Get the color of the darkest pixel in BGR format
     darkest_color = image[min_intensity_coord]
     return darkest_color
-    pass
 
 
 def replace_color(image, old_background_color, new_background_color):
@@ -67,10 +50,9 @@ def replace_color(image, old_background_color, new_background_color):
                 new_image[x, y] = new_background_color
 
     return new_image
-    pass
 
 
-class image_processing:
+class ImageProcessor:
 
 
     def __init__(self):
@@ -87,7 +69,6 @@ class image_processing:
             for name in os.listdir(folder_name_):
                 name = f'{folder_name_}/{name}'
                 image = cv2.imread(name)
-                image = decrease_resolution(image, 3)
                 images.append(image)
             self.folders.update({folder_name: images})
 
@@ -104,7 +85,6 @@ class image_processing:
 
             images.extend(images_flipped)
 
-        self.print_status()
         return None
 
     def print_status(self) -> None:
@@ -130,26 +110,6 @@ class image_processing:
         print("saved")
         return None
 
-    def auto_treshold(self):
-
-        folders_tresholded = {}
-
-        for folder_name in self.folders:
-            images = self.folders[folder_name]
-
-            images_tresholded = []
-            for image in images:
-
-                gray_image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-                tresholded = treshold(gray_image)
-                images_tresholded.append(tresholded)
-
-            folders_tresholded.update({folder_name: images_tresholded})
-            images.extend(images_tresholded)
-
-        self.folders = folders_tresholded
-        self.print_status()
-        return None
 
     def replace_darkest_color(self, new_color=(0,0,0)):
         folders_edited = {}
@@ -167,10 +127,9 @@ class image_processing:
             images.extend(images_edited)
 
         self.folders = folders_edited
-        self.print_status()
         return None
 
-    def reduce_colors(self, colors=2):
+    def reduce_colors(self, color_amount=2):
         folders_edited = {}
 
         for folder_name in self.folders:
@@ -178,15 +137,29 @@ class image_processing:
 
             images_edited = []
             for image in images:
-                images_edited.append(reduce(image, colors))
+                images_edited.append(reduce(image, color_amount))
 
             folders_edited.update({folder_name: images_edited})
             images.extend(images_edited)
 
         self.folders = folders_edited
-        self.print_status()
         return None
 
+    def decrease_resolutions(self, param):
+        folders_edited = {}
+
+        for folder_name in self.folders:
+            images = self.folders[folder_name]
+
+            images_edited = []
+            for image in images:
+                images_edited.append(decrease_resolution(image, param))
+
+            folders_edited.update({folder_name: images_edited})
+            images.extend(images_edited)
+
+        self.folders = folders_edited
+        return None
 
 
 def save_img(image, directory, filename) -> None:
@@ -209,11 +182,13 @@ def make_new_dir(new_dir) -> None:
 
 
 def main():
-    processor = image_processing()
+    processor = ImageProcessor()
     processor.load_images("data")
-    processor.reduce_colors(2)
-    processor.replace_darkest_color(new_color=(0,0,0))
-    #processor.rotate() #TODO
+    #processor.rotate(step=15) #TODO
+    processor.decrease_resolutions(3) # 168x168 * (1/3) = 56x56
+    processor.reduce_colors(color_amount=2)
+    processor.replace_darkest_color(new_color=(0,0,0)) # zamienia tlo na czarne
+    #processor.mirror()
     processor.save("data")
 
 
