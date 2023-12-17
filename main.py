@@ -1,5 +1,6 @@
 import cv2
 import os
+import skimage
 
 def decrease_resolution(img, step=10):
     img = img[::step, ::step]
