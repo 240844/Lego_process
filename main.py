@@ -1,9 +1,12 @@
 import cv2
 import os
+import numpy as np
+
 
 def decrease_resolution(img, step=10):
     img = img[::step, ::step]
     return img
+
 
 def treshold(image):
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -12,8 +15,6 @@ def treshold(image):
 
 
 class image_processing:
-
-
     def __init__(self):
         self.folders = {}
         self.directory_path = ""
@@ -89,6 +90,31 @@ class image_processing:
         self.print_status()
         return None
 
+    def rotate_image(self, image, angle):
+        image_center = tuple(np.array(image.shape[1::-1]) / 2)
+        rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
+        result = cv2.warpAffine(image, rot_mat, image.shape[1::-1], flags=cv2.INTER_LINEAR)
+        img_avg = get_avg(result)
+        for x in range(result.shape[0]):
+            for y in range(result.shape[1]):
+                if np.array_equal([0, 0, 0], result[x, y]):
+                    result[x, y] = np.asarray(img_avg)
+        return result
+
+    def rotate_images(self, angle=20, r=1) -> None:
+        for folder_name in self.folders:
+            images = self.folders[folder_name]
+            images_rotated = []
+
+            for image in images:
+                for i in range(r):
+                    images_rotated.append(self.rotate_image(image, angle*i))
+
+            images.extend(images_rotated)
+
+        self.print_status()
+        return None
+
 
 def save_img(image, directory, filename) -> None:
     if not os.path.exists(directory):
@@ -97,7 +123,6 @@ def save_img(image, directory, filename) -> None:
     full_path = os.path.join(directory, filename)
 
     cv2.imwrite(full_path, image)
-
 
 
 def make_new_dir(new_dir) -> None:
@@ -109,11 +134,40 @@ def make_new_dir(new_dir) -> None:
     return None
 
 
+def get_avg(img):
+    output1 = np.average(img[:, :, 0])
+    output2 = np.average(img[:, :, 1])
+    output3 = np.average(img[:, :, 2])
+    output = [output1, output2, output3]
+    return output
+
+
+def fun(image, angle):
+    image_center = tuple(np.array(image.shape[1::-1]) / 2)
+    rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
+    result = cv2.warpAffine(image, rot_mat, image.shape[1::-1], flags=cv2.INTER_LINEAR)
+    for x in range(result.shape[0]):
+        for y in range(result.shape[1]):
+            t = result[x, y]
+            if np.array_equal([0, 0, 0], t):
+                result[x, y] = np.asarray([255, 255, 255])
+    return result
+
+
 def main():
+
+    t_img = cv2.imread("data/apple/32374789.png")
+    print(type(t_img))
+    d_img = fun(t_img, 20)
+    get_avg(t_img)
+    cv2.imwrite("test1.png", d_img)
+
     processor = image_processing()
     processor.load_images("data")
-    processor.auto_treshold()
+    processor.rotate_images()
     processor.mirror()
+    processor.auto_treshold()
+
     processor.save("data")
 
 
