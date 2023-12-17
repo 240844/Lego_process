@@ -116,6 +116,15 @@ def main():
     processor.mirror()
     processor.save("data")
 
+def label_image(image):
+    hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
+    h ,s ,v = cv2.split(hsv)
+
+    retval, thresholded = cv2.threshold(v, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
+
+    labels = skimage.measure.label(thresholded)
+    labeledImage = skimage.color.label2rgb(labels, image=rawImage, bg_label=0)
+    return labels, labeledImage
 
 if __name__ == '__main__':
     main()
