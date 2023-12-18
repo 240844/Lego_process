@@ -12,9 +12,14 @@ def process(frame: np.ndarray):
     """
     v = processing.canny(v, t1=100, t2=200)
     v = processing.dilation(v, size=6)
-    #v = processing.paint_label(frame, v)
+    v = processing.paint_label(frame, v)
     return v
 
 
-camera = connector.Connector()
+camera = connector.Connector(
+    port=8080,
+    width=540,
+    height=960,
+    fps=10
+)
 camera.run(process)

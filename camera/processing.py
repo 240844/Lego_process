@@ -2,9 +2,11 @@ import cv2
 import skimage as ski
 import numpy as np
 
+
 def grey_scale(frame: np.ndarray) -> np.ndarray:
     gray_frame = frame.copy()
     return cv2.cvtColor(gray_frame, cv2.COLOR_BGR2GRAY)
+
 
 # Też nie działa
 def thresholding(frame: np.ndarray, threshold=0.5) -> np.ndarray:
@@ -33,6 +35,7 @@ def paint_label(frame, segmented_frame):
     labels = ski.measure.label(segmented_frame)
     frame_paint = ski.color.label2rgb(labels, segmented_frame, bg_label=1)
     return ski.util.img_as_ubyte(frame_paint)
+
 
 # Nie działa
 def region_props(frame):
