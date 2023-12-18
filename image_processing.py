@@ -13,15 +13,25 @@ def treshold(gray_image):
     return thresh
 
 
-def rgb_to_grayscale(image):
+def rgb_to_grayscale(image, method=2):
     b, g, r = cv2.split(image)
+    if method == 1:
+        grayscale_image = (r + g + b) / 3
+        return np.uint8(grayscale_image)
+    elif method == 2:
+        grayscale_image = 0.299 * r + 0.587 * g + 0.114 * b
+        return np.uint8(grayscale_image)
+    elif method == 3:
+        grayscale_image = 0.3 * r + 0.4 * g + 0.3 * b
+        return np.uint8(grayscale_image)
 
-    grayscale_image = 0.299 * r + 0.587 * g + 0.114 * b
 
-    grayscale_image = np.uint8(grayscale_image)
-
-    return grayscale_image
-
+def get_avg(img):
+    output1 = np.average(img[:, :, 0])
+    output2 = np.average(img[:, :, 1])
+    output3 = np.average(img[:, :, 2])
+    output = [output1, output2, output3]
+    return output
 
 def reduce(image, num_colors=2):
     pixels = image.reshape((-1, 3))
@@ -33,6 +43,17 @@ def reduce(image, num_colors=2):
     segmented_image = segmented_image.reshape(image.shape)
     return segmented_image
 
+
+def rotate_image(image, angle):
+    image_center = tuple(np.array(image.shape[1::-1]) / 2)
+    rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
+    result = cv2.warpAffine(image, rot_mat, image.shape[1::-1], flags=cv2.INTER_LINEAR)
+    img_avg = get_avg(result)
+    for x in range(result.shape[0]):
+        for y in range(result.shape[1]):
+            if np.array_equal([0, 0, 0], result[x, y]):
+                result[x, y] = np.asarray(img_avg)
+    return result
 
 def get_darkest_color(image):
     gray_img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -162,6 +183,21 @@ class ImageProcessor:
         return None
 
 
+    def rotate_images(self, angle=20, r=1) -> None:
+        for folder_name in self.folders:
+            images = self.folders[folder_name]
+            images_rotated = []
+
+            for image in images:
+                for i in range(r):
+                    images_rotated.append(rotate_image(image, angle * i))
+
+            images.extend(images_rotated)
+
+        self.print_status()
+        return None
+
+
 def save_img(image, directory, filename) -> None:
     if not os.path.exists(directory):
         os.makedirs(directory)
@@ -184,11 +220,11 @@ def make_new_dir(new_dir) -> None:
 def main():
     processor = ImageProcessor()
     processor.load_images("data")
-    #processor.rotate(step=15) #TODO
+    processor.rotate_images(angle=20, r=1)
     processor.decrease_resolutions(3) # 168x168 * (1/3) = 56x56
     processor.reduce_colors(color_amount=2)
     processor.replace_darkest_color(new_color=(0,0,0)) # zamienia tlo na czarne
-    #processor.mirror()
+    processor.mirror()
     processor.save("data")
 
 
