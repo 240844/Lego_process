@@ -8,15 +8,10 @@ def process(frame: np.ndarray):
     v = processing.grey_scale(v)
     v = processing.gauss(v, size=4)
     """
-    Regionprops detection
-    """
-    # v = processing.thresholding(v, 0.25)
-    # v = processing.region_props(v)
-    """
     Canny edges detection
     """
-    #v = processing.canny(v, t1=100, t2=200)
-    #v = processing.dilation(v, size=6)
+    v = processing.canny(v, t1=100, t2=200)
+    v = processing.dilation(v, size=6)
     #v = processing.paint_label(frame, v)
     return v
 
