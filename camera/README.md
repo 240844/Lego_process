@@ -10,7 +10,7 @@
 ## Installation
 
 1. Download openCV library: `pip3 install opencv-python`
-2. Install application in mobile device: IP Webcam
+2. Install application in mobile device: **IP Webcam**
 
 ## Execution
 1. Create processing pipeline:
