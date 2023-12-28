@@ -2,11 +2,9 @@ import cv2
 import os
 import skimage
 import numpy as np
-import sys
 
 
 def main():
-    np.set_printoptions(threshold=sys.maxsize)
     test = cv2.imread("example\im.png")
     cv2.imshow("test",test)
     cv2.waitKey()
@@ -21,6 +19,23 @@ def main():
         item = mask_object(l, test, i)
         cv2.imshow("item" + str(i),item)
         cv2.waitKey()
+
+    input_video_path = "example\\vid.mp4"
+
+    cap = cv2.VideoCapture(input_video_path)
+
+    while(cap.isOpened()):
+        ret, frame = cap.read()
+        if ret:
+            l, limage = label_image(frame)
+            m = mask_image(l, frame)
+            cv2.imshow("frame", m)
+            cv2.waitKey(1)
+        else:
+            break
+
+    cap.release()
+    cv2.destroyAllWindows()
     
 
 def label_image(image):
@@ -66,6 +81,9 @@ def mask_object(label, image, item):
         mitem = np.zeros(shape = (xmax-xmin,xmax-xmin,3),dtype = np.uint8)
         mitem[:,d:xmax-xmin-diff,:] = mimage[xmin:xmax,ymin:ymax,:]
     return mitem
+
+
+
 
 if __name__ == '__main__':
     main()
