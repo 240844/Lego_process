@@ -1,3 +1,5 @@
+import numpy as np
+
 from help_func import *
 
 
@@ -123,14 +125,50 @@ class ImageProcessor:
         self.print_status()
         return None
 
+    def zoom_out(self, image):
+        new_image = np.zeros((image.shape[0], image.shape[1], 3))
+        img_avg = get_avg(image)
+        for x in range(image.shape[0]):
+            for y in range(image.shape[1]):
+                new_image[x, y] = np.asarray(img_avg)
+        x_offset = int(image.shape[0] / 4)
+        y_offset = int(image.shape[1] / 4)
+        img = decrease_resolution(image, step=2)
+        new_image[y_offset:y_offset + img.shape[0], x_offset:x_offset + img.shape[1]] = img
+        return new_image
+
+    def zoom_in(self, image):
+        x_offset = int(image.shape[0] / 4)
+        y_offset = int(image.shape[1] / 4)
+        n_width = int(image.shape[0] / 2)
+        n_height = int(image.shape[1] / 2)
+        new_image = np.zeros((n_width, n_height, 3))
+        for x in range(n_width):
+            for y in range(n_height):
+                print(x)
+                new_image[x, y] = image[x + x_offset, y + y_offset]
+        return new_image
+
+    def zoom_out_all(self) -> None:
+        for folder_name in self.folders:
+            images = self.folders[folder_name]
+            images_zoomed = []
+
+            for image in images:
+                images_zoomed.append(self.zoom_out(image))
+
+            images.extend(images_zoomed)
+
+        self.print_status()
+        return None
 
 def main():
     processor = ImageProcessor()
     processor.load_images("data")
     processor.rotate_images(20, 1)
-    processor.decrease_resolutions(3) # 168x168 * (1/3) = 56x56
+    processor.decrease_resolutions(3)  # 168x168 * (1/3) = 56x56
     processor.reduce_colors(color_amount=2)
-    processor.replace_darkest_color(new_color=(0, 0, 0)) # zamienia tlo na czarne
+    processor.replace_darkest_color(new_color=(0, 0, 0))  # zamienia tlo na czarne
     #processor.mirror()
     processor.save("data")
 

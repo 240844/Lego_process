@@ -79,6 +79,7 @@ def save_img(image, directory, filename) -> None:
     full_path = os.path.join(directory, filename)
 
     cv2.imwrite(full_path, image)
+    return None
 
 
 def make_new_dir(new_dir) -> None:
