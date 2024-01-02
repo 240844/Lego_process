@@ -21,14 +21,15 @@ def process(frame: np.ndarray):
 
 
 camera = connector.Connector(
-    process,
     port=8080,
     width=540,
     height=960,
     fps=10
 )
 
+model = None
+
 app = QApplication(sys.argv)
-gui = interface.Interface(camera)
+gui = interface.Interface(camera, process, model)
 gui.show()
 sys.exit(app.exec_())
