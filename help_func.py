@@ -72,4 +72,3 @@ def make_new_dir(new_dir: str) -> None:
         os.mkdir(new_dir)
     os.chdir(current_dir)
     return None
-

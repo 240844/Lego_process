@@ -179,15 +179,27 @@ class ImageProcessor:
         self.print_status()
         return None
 
+    def change_color(self) -> None:
+        for folder_name in self.folders:
+            images = self.folders[folder_name]
+            new_images = []
+            for image in images:
+                new_images.append(cv2.convertScaleAbs(image, alpha=1, beta=10))
+                new_images.append(cv2.convertScaleAbs(image, alpha=-1, beta=5))
+            images.extend(new_images)
+        self.print_status()
+        return None
+
 
 def main():
     processor = ImageProcessor()
     processor.load_images("data")
     #processor.rotate_images(20, 1)
-    processor.zoom_all()
-    processor.decrease_resolutions(3)  # 168x168 * (1/3) = 56x56
-    processor.reduce_colors(color_amount=2)
-    processor.replace_darkest_color(new_color=(0, 0, 0))  # zamienia tlo na czarne
+    #processor.zoom_all()
+    processor.change_color()
+    #processor.decrease_resolutions(3)  # 168x168 * (1/3) = 56x56
+    #processor.reduce_colors(color_amount=2)
+    #processor.replace_darkest_color(new_color=(0, 0, 0))  # zamienia tlo na czarne
     #processor.mirror()
     processor.save("data")
 
