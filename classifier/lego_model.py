@@ -6,7 +6,7 @@ import numpy as np
 from keras import Sequential
 from keras.src.layers import Flatten, Conv2D, Dense, Dropout, MaxPool2D
 
-from classifier.enum import LegoBrick
+from classifier.brick_enum import LegoBrick
 from utils import load_image, get_root_dir
 
 
@@ -14,7 +14,6 @@ class LegoBrickModel:
     def __init__(self, model_filename=None):
         self.model = None
         self.load_model(model_filename)
-        self.model_filename = None
 
     def load_model(self, model_filename):
         model_path = os.path.join(get_root_dir(), 'models', model_filename)
@@ -32,7 +31,7 @@ class LegoBrickModel:
         predicted_brick = LegoBrick(np.argmax(predictions))
         confidence = np.max(predictions)
         print(f"Predictions: {predictions}")
-        #print(f"Predicted class: {predicted_brick.name}, confidence: {confidence * 100:.3f}%")
+        #print(f"Predicted class: {predicted_brick.name}, confidence: {confidence * 100:.1f}%")
         return predicted_brick, confidence
 
 
@@ -49,14 +48,14 @@ def create_model(input_shape):
     return model
 
 
-def prediction_example():
-    imageRGB = load_image('cherry/cherry_34.png') # image musi być w formacie RGB
+
+# Example predict usage:
+if __name__ == '__main__':
+    test_brick = LegoBrick.CHERRY
+    image_path = f'{test_brick.name}/{test_brick.name}_{36}.png'
+    imageRGB = load_image(image_path)  # image musi być w formacie RGB
+
     model = LegoBrickModel('lego_classifier_model_[e=10,bs=32].keras')
     predicted_brick, confidence = model.predict_brick(imageRGB)
-    print(f"prediction: {predicted_brick.name}, index: {predicted_brick.value}, confidence: {confidence*100:.1f}%")
-
-
-if __name__ == '__main__':
-    prediction_example()
-    pass
+    print(f"prediction: {predicted_brick.name}, index: {predicted_brick.value}, confidence: {confidence * 100:.1f}%")
 
