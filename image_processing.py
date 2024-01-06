@@ -69,8 +69,10 @@ class ImageProcessor:
         return None
 
     def mirror(self) -> None:
+        print("mirroring...")
 
         for folder_name in self.folders:
+            print("\tmirroring ",folder_name)
             images = self.folders[folder_name]
             images_flipped = []
 
@@ -88,10 +90,11 @@ class ImageProcessor:
 
         return None
 
-    def save(self, path: str) -> None:
+    def save(self) -> None:
         print("saving...")
 
         for folder_name in self.folders:
+            print("\tsaving ",folder_name)
             for i, image in enumerate(self.folders[folder_name]):
                 cdir = os.getcwd()
 
@@ -106,8 +109,10 @@ class ImageProcessor:
 
     def replace_darkest_color(self, new_color: tuple[int, int, int] = (0, 0, 0)) -> None:
         folders_edited = {}
+        print("replacing darkest color...")
 
         for folder_name in self.folders:
+            print("\treplacing ",folder_name)
             images = self.folders[folder_name]
 
             images_edited = []
@@ -123,9 +128,11 @@ class ImageProcessor:
         return None
 
     def reduce_colors(self, color_amount: int = 2) -> None:
+        print("reducing colors...")
         folders_edited = {}
 
         for folder_name in self.folders:
+            print("\treducing ",folder_name)
             images = self.folders[folder_name]
 
             images_edited = []
@@ -139,6 +146,7 @@ class ImageProcessor:
         return None
 
     def decrease_resolutions(self, param: int) -> None:
+        print("decreasing resolution...")
         folders_edited = {}
         for folder_name in self.folders:
             images = self.folders[folder_name]
@@ -153,13 +161,16 @@ class ImageProcessor:
         self.folders = folders_edited
         return None
 
-    def rotate_images(self, angle: int = 20, r: int = 1) -> None:
+    def rotate_images(self, angle: int = 20) -> None:
+        rotations = 360 // angle
+        print("rotating...")
         for folder_name in self.folders:
+            print("\trotating ",folder_name)
             images = self.folders[folder_name]
             images_rotated = []
 
             for image in images:
-                for i in range(r):
+                for i in range(rotations):
                     images_rotated.append(rotate_image(image, angle*i))
 
             images.extend(images_rotated)
@@ -168,19 +179,24 @@ class ImageProcessor:
         return None
 
     def zoom_all(self) -> None:
+        print("zooming...")
         for folder_name in self.folders:
+            print("\tzooming ",folder_name)
             images = self.folders[folder_name]
             images_zoomed = []
             for image in images:
-                images_zoomed.append(zoom_out(image, scale=60))
-                images_zoomed.append(zoom_out(image))
-                images_zoomed.append(zoom_in(image))
+                images_zoomed.append(zoom_out(image, scale=50))
+                images_zoomed.append(zoom_out(image, scale=25))
+                images_zoomed.append(zoom_in(image, scale=50))
+                images_zoomed.append(zoom_in(image, scale=25))
             images.extend(images_zoomed)
         self.print_status()
         return None
 
     def change_color(self) -> None:
+        print("changing color...")
         for folder_name in self.folders:
+            print("\tchanging color ",folder_name)
             images = self.folders[folder_name]
             new_images = []
             for image in images:
@@ -194,14 +210,14 @@ class ImageProcessor:
 def main():
     processor = ImageProcessor()
     processor.load_images("data")
-    #processor.rotate_images(20, 1)
-    #processor.zoom_all()
+    processor.decrease_resolutions(3)  # 168x168 * (1/3) = 56x56
+    processor.rotate_images(60)
+    processor.zoom_all()
+    processor.reduce_colors(color_amount=2)
     processor.change_color()
-    #processor.decrease_resolutions(3)  # 168x168 * (1/3) = 56x56
-    #processor.reduce_colors(color_amount=2)
-    #processor.replace_darkest_color(new_color=(0, 0, 0))  # zamienia tlo na czarne
-    #processor.mirror()
-    processor.save("data")
+    processor.replace_darkest_color(new_color=(0, 0, 0))  # zamienia tlo na czarne
+    processor.mirror()
+    processor.save()
 
 
 if __name__ == '__main__':
