@@ -55,7 +55,7 @@ if __name__ == '__main__':
     image_path = f'{test_brick.name}/{test_brick.name}_{36}.png'
     imageRGB = load_image(image_path)  # image musi być w formacie RGB
 
-    model = LegoBrickModel('lego_classifier_model_[e=10,bs=32].keras')
+    model = LegoBrickModel('lego_classifier_model_[e=3,bs=200].keras')
     predicted_brick, confidence = model.predict_brick(imageRGB)
     print(f"prediction: {predicted_brick.name}, index: {predicted_brick.value}, confidence: {confidence * 100:.1f}%")
 

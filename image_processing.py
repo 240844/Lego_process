@@ -118,7 +118,7 @@ class ImageProcessor:
             images_edited = []
             for image in images:
                 old_background_color = get_darkest_color(image)
-                edited_image = replace_color(image, old_background_color,new_color)
+                edited_image = replace_color(image, old_background_color, new_color)
                 images_edited.append(edited_image)
 
             folders_edited.update({folder_name: images_edited})
@@ -207,7 +207,7 @@ class ImageProcessor:
         return None
 
 
-def main():
+def create_database():
     processor = ImageProcessor()
     processor.load_images("data")
     processor.decrease_resolutions(3)  # 168x168 * (1/3) = 56x56
@@ -221,4 +221,4 @@ def main():
 
 
 if __name__ == '__main__':
-    main()
+    create_database()
