@@ -39,7 +39,7 @@ def reduce(image: np.ndarray, num_colors: int = 2) -> np.ndarray:
     return segmented_image
 
 
-def get_darkest_color(image: np.ndarray) -> int:
+def get_darkest_color(image: np.ndarray):
     gray_img = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     min_intensity_coord = np.unravel_index(np.argmin(gray_img), gray_img.shape)
     darkest_color = image[min_intensity_coord]
