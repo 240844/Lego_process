@@ -6,6 +6,7 @@ from PyQt5.QtCore import pyqtSlot, Qt
 import numpy as np
 import random
 
+
 class Interface(QWidget):
     def __init__(self, camera, proces, model):
         super().__init__()
@@ -43,7 +44,6 @@ class Interface(QWidget):
             prediction_text = "\n".join([str(entry) for entry in predict])
         self.text.setText(title + "\n" + prediction_text)
 
-
     @pyqtSlot(np.ndarray)
     def update_image(self, cv_img):
         try:
@@ -59,4 +59,3 @@ class Interface(QWidget):
             print("#### Image cannot be updated.")
             print(e)
             exit(1)
-
