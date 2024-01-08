@@ -1,10 +1,10 @@
 from PyQt5 import QtGui
-from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout
+from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QVBoxLayout
 from PyQt5.QtGui import QPixmap
 import cv2
-from PyQt5.QtCore import pyqtSlot
+from PyQt5.QtCore import pyqtSlot, Qt
 import numpy as np
-
+import random
 
 class Interface(QWidget):
     def __init__(self, camera, proces, model):
@@ -14,12 +14,16 @@ class Interface(QWidget):
         self.process = proces
         self.model = model
         self.image = QLabel(self)
-        self.text = QLabel("Predictions")
+        self.title = "Predictions"
+        self.test_predictions = ""
+        self.text = QLabel(self.title)
 
         hbox = QHBoxLayout()
+        vbox = QVBoxLayout()
         hbox.addWidget(self.image)
-        hbox.addWidget(self.text)
-
+        vbox.addWidget(self.text)
+        vbox.setAlignment(Qt.AlignTop)
+        hbox.addLayout(vbox)
         self.setLayout(hbox)
 
         self.camera.frame_signal.connect(self.update_image)
@@ -29,15 +33,22 @@ class Interface(QWidget):
         self.camera.stop()
         event.accept()
 
+    def predictions_to_text(self, processed_image):
+        title = self.title
+        if self.model is None:
+            title = "Test " + title
+            prediction_text = "\n".join([f"var {i}: {str(random.randint(0, 100))}%" for i in range(0, 10)])
+        else:
+            predict = self.model.predict(processed_image)
+            prediction_text = "\n".join([str(entry) for entry in predict])
+        self.text.setText(title + "\n" + prediction_text)
+
+
     @pyqtSlot(np.ndarray)
     def update_image(self, cv_img):
         try:
             processed_image = self.process(cv_img)
-
-            if self.model is not None:
-                self.text = self.model.predict(processed_image)
-            else:
-                self.text = processed_image.shape
+            self.predictions_to_text(processed_image)
 
             rgb_image = cv2.cvtColor(processed_image, cv2.COLOR_BGR2RGB)
             h, w, ch = rgb_image.shape
