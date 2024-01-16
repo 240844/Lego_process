@@ -3,6 +3,10 @@ import skimage as ski
 import numpy as np
 
 
+# metody w cv2:
+# mog2
+# colorinrange
+# pyQt
 def grey_scale(frame: np.ndarray) -> np.ndarray:
     gray_frame = frame.copy()
     return cv2.cvtColor(gray_frame, cv2.COLOR_BGR2GRAY)
@@ -46,3 +50,20 @@ def region_props(frame):
         rr, cc = ski.draw.rectangle(start=(minr, minc), end=(maxr, maxc), extent=None, shape=frame.shape)
         frame[rr, cc] = 255
     return ski.util.img_as_ubyte(frame)
+
+def addGUI(frame):
+    font = cv2.FONT_HERSHEY_SIMPLEX
+    bottomLeftCornerOfText = (10, 500)
+    fontScale = 1
+    fontColor = (255, 255, 255)
+    thickness = 1
+    lineType = 2
+
+    cv2.putText(frame, 'Parameters',
+                bottomLeftCornerOfText,
+                font,
+                fontScale,
+                fontColor,
+                thickness,
+                lineType)
+    return frame

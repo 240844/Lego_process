@@ -1,6 +1,9 @@
 import connector
 import processing
 import numpy as np
+import sys
+from PyQt5.QtWidgets import QApplication
+import interface
 
 
 def process(frame: np.ndarray):
@@ -10,9 +13,9 @@ def process(frame: np.ndarray):
     """
     Canny edges detection
     """
-    v = processing.canny(v, t1=100, t2=200)
+    v = processing.canny(v, t1=200, t2=255)
     v = processing.dilation(v, size=6)
-    v = processing.paint_label(frame, v)
+
     return v
 
 
@@ -22,4 +25,10 @@ camera = connector.Connector(
     height=960,
     fps=10
 )
-camera.run(process)
+
+model = None
+
+app = QApplication(sys.argv)
+gui = interface.Interface(camera, process, model)
+gui.show()
+sys.exit(app.exec_())
