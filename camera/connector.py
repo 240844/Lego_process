@@ -10,7 +10,7 @@ http://192.168.0.4:8080/
 
 class Connector(QThread):
     frame_signal = pyqtSignal(np.ndarray)
-    default_ip = "https://192.168.0.4"
+    default_ip = "http://192.168.173.194"
 
     def __init__(self, ip=default_ip, port=8080, width=540, height=960, fps=30):
         super().__init__()

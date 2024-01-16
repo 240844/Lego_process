@@ -15,7 +15,6 @@ def process(frame: np.ndarray):
     """
     v = processing.canny(v, t1=200, t2=255)
     v = processing.dilation(v, size=6)
-    v = processing.paint_label(frame, v)
 
     return v
 
