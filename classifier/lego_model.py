@@ -23,8 +23,7 @@ class LegoBrickModel:
     # image musi być w formacie RGB. inaczej wypisze bzdury
     def predict_brick(self, imageRGB, input_shape=(56, 56)):
         imageRGB = cv2.resize(imageRGB, input_shape)
-        imageRGB = imageRGB / 255.0  # Normalize pixel values to be between 0 and 1
-        imageRGB = np.expand_dims(imageRGB, axis=0)  # Add batch dimension
+        imageRGB = np.expand_dims(imageRGB, axis=0)
 
         predictions = self.model.predict(imageRGB)
         print(f"Predictions: {predictions}")
@@ -49,16 +48,41 @@ def create_model(input_shape):
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
     return model
 
-
+def view_image(imageRGB):
+    cv2.imshow('image', imageRGB[:, :, ::-1])
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
 
 # Example predict usage:
-if __name__ == '__main__':
-    test_brick = LegoBrick.CHERRY
-    image_path = f'{test_brick.name}/{test_brick.name}_{36}.png'
+def example(test_brick = LegoBrick.CHERRY, image_index = 36):
+    image_path = f'data_processed/{test_brick.name}/{test_brick.name}_{image_index}.png'
+    print(f"Image path: {image_path}")
     imageRGB = load_image(image_path)  # image musi być w formacie RGB
+    view_image(imageRGB)
 
-    model = LegoBrickModel('lego_classifier_model_[e=3,bs=200].keras')
+    model = LegoBrickModel('lego_classifier_model_[e=10,bs=32].keras')
     result = model.predict_brick(imageRGB)
 
     for brick, confidence in result:
         print(f"Predicted class: {brick.name}, confidence: {confidence * 100:.1f}%")
+
+
+def test_junk():
+    model = LegoBrickModel('lego_classifier_model_[e=1,bs=50].keras')
+
+    for filename in os.listdir(os.path.join(get_root_dir(), 'junk_items')):
+        print(filename)
+        image_path = f'junk_items/{filename}'
+        imageRGB = load_image(image_path)  # image musi być w formacie RGB
+        view_image(imageRGB)
+
+
+        result = model.predict_brick(imageRGB)
+
+        for brick, confidence in result:
+            print(f"Predicted class: {brick.name}, confidence: {confidence * 100:.1f}%")
+
+
+if __name__ == '__main__':
+    #example()
+    test_junk()
