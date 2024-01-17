@@ -52,7 +52,8 @@ class Interface(QWidget):
 
             rgb_image = cv2.cvtColor(processed_image, cv2.COLOR_BGR2RGB)
             h, w, ch = rgb_image.shape
-            qt_image = QtGui.QImage(rgb_image.data, w, h, ch * w, QtGui.QImage.Format_RGB888)
+            qt_image = QtGui.QImage(rgb_image.data, w, w, ch * w, QtGui.QImage.Format_RGB888)
+            #qt_image = QtGui.QImage(rgb_image.data, w, h, ch * w, QtGui.QImage.Format_RGB888)
             pixmap_image = QPixmap.fromImage(qt_image)
             self.image.setPixmap(pixmap_image)
         except Exception as e:
