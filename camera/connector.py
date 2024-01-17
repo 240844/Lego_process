@@ -1,41 +1,48 @@
-import subprocess
 import time
-
+import numpy as np
 import cv2
+from PyQt5.QtCore import pyqtSignal, QThread
 
 """
 http://192.168.0.4:8080/
 """
 
 
-class Connector:
-    def __init__(self, port=8080, width=540, height=960, fps=30):
+class Connector(QThread):
+    frame_signal = pyqtSignal(np.ndarray)
+    default_ip = "http://192.168.173.194"
+
+    def __init__(self, ip=default_ip, port=8080, width=540, height=960, fps=30):
+        super().__init__()
+        self.ip = ip
         self.port = port
         self.width = width
         self.height = height
         self.fps = fps
+        self.is_running = False
 
-    def run(self, processing):
+    def run(self):
+        self.is_running = True
         time_diff = 0
-        capture = cv2.VideoCapture(f"https://192.168.0.4:{self.port}/video")
+        capture = cv2.VideoCapture(f"{self.ip}:{self.port}/video")
         if not capture.isOpened():
             print("#### Capture stream cannot be opened.")
-        while capture.isOpened():
-            ret, frame = capture.read()
+        while capture.isOpened() and self.is_running:
             time_elapse = time.time() - time_diff
-            if time_elapse < 1./self.fps:
+            ret, frame = capture.read()
+
+            if time_elapse < 1. / self.fps:
                 continue
             try:
                 time_diff = time.time()
                 frame = cv2.resize(frame, (self.width, self.height))
-                frame = processing(frame)
-                cv2.imshow("temp", frame)
-                if cv2.waitKey(1) & 0xFF == ord('c'):
-                    break
+                self.frame_signal.emit(frame)
             except cv2.error as e:
-                print("#### Stream has been closed.")
+                print("#### Stream cannot be emitted.")
                 print(e)
                 break
-
+        print("#### Stream has been closed.")
         capture.release()
-        cv2.destroyAllWindows()
+
+    def close(self):
+        self.is_running = False

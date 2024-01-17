@@ -27,12 +27,14 @@ class LegoBrickModel:
         imageRGB = np.expand_dims(imageRGB, axis=0)  # Add batch dimension
 
         predictions = self.model.predict(imageRGB)
-
-        predicted_brick = LegoBrick(np.argmax(predictions))
-        confidence = np.max(predictions)
         print(f"Predictions: {predictions}")
-        #print(f"Predicted class: {predicted_brick.name}, confidence: {confidence * 100:.1f}%")
-        return predicted_brick, confidence
+        result = []
+        for i in range(len(LegoBrick)):
+            result.append((LegoBrick(i), predictions[0][i]))
+
+        result.sort(key=lambda x: x[1], reverse=True)
+
+        return result
 
 
 def create_model(input_shape):
@@ -56,6 +58,7 @@ if __name__ == '__main__':
     imageRGB = load_image(image_path)  # image musi być w formacie RGB
 
     model = LegoBrickModel('lego_classifier_model_[e=3,bs=200].keras')
-    predicted_brick, confidence = model.predict_brick(imageRGB)
-    print(f"prediction: {predicted_brick.name}, index: {predicted_brick.value}, confidence: {confidence * 100:.1f}%")
+    result = model.predict_brick(imageRGB)
 
+    for brick, confidence in result:
+        print(f"Predicted class: {brick.name}, confidence: {confidence * 100:.1f}%")

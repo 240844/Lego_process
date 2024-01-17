@@ -1,3 +1,5 @@
+import numpy as np
+
 from help_func import *
 
 
@@ -14,18 +16,14 @@ def rotate_image(image: np.ndarray, angle: int) -> np.ndarray:
 
 
 def zoom_out(image: np.ndarray, scale: int = 50) -> np.ndarray:
-    new_image = np.zeros((image.shape[0], image.shape[1], 3))
-    img_avg = get_avg(image)
-    for x in range(image.shape[0]):
-        for y in range(image.shape[1]):
-            new_image[x, y] = np.asarray(img_avg)
-    x_offset = int(image.shape[0] / 4)
-    y_offset = int(image.shape[1] / 4)
+    new_image = np.zeros_like(image)
     width = int(image.shape[1] * scale / 100)
     height = int(image.shape[0] * scale / 100)
-    dim = (width, height)
-    img = cv2.resize(image, dim)
-    new_image[y_offset:y_offset + img.shape[0], x_offset:x_offset + img.shape[1]] = img
+    small_image = cv2.resize(image, (width, height))
+    x_margin= int((image.shape[0] - small_image.shape[0]) / 2)
+    y_margin = int((image.shape[1] - small_image.shape[1]) / 2)
+    new_image[x_margin:small_image.shape[0] + x_margin, y_margin:small_image.shape[1] + y_margin] = small_image
+
     return new_image
 
 
