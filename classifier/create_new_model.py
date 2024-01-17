@@ -23,5 +23,5 @@ def create_new_lego_model(filename="lego_classifier_model", epochs=3, batch_size
     model.save(f'{save_dir}/{filename}_[e={epochs},bs={batch_size}].keras')
 
 if __name__ == '__main__':
-    create_new_lego_model("lego_classifier_model", epochs=3, batch_size=200)
+    create_new_lego_model("lego_classifier_model", epochs=1, batch_size=50)
 
