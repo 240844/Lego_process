@@ -72,14 +72,20 @@ def mask_object(label, image, item):
         d = int(diff/2)
         diff -= d
 
-        mitem = np.zeros(shape = (ymax-ymin,ymax-ymin,3),dtype = np.uint8)
-        mitem[d:ymax-ymin-diff,:,:] = mimage[xmin:xmax,ymin:ymax,:]
+
+        mitem = np.zeros(shape = (ymax-ymin+10,ymax-ymin+10,3),dtype = np.uint8)
+        mitem[d:ymax-ymin-diff,5:-5,:] = mimage[xmin:xmax,ymin:ymax,:]
+
     else:
         d = int(diff/2)
         diff -= d
         
-        mitem = np.zeros(shape = (xmax-xmin,xmax-xmin,3),dtype = np.uint8)
-        mitem[:,d:xmax-xmin-diff,:] = mimage[xmin:xmax,ymin:ymax,:]
+        mitem = np.zeros(shape = (xmax-xmin+10,xmax-xmin+10,3),dtype = np.uint8)
+        mitem[5:-5,d:xmax-xmin-diff,:] = mimage[xmin:xmax,ymin:ymax,:]
+    mitem = cv2.resize(mitem,(56,56))
+    #mitem = cv2.reduce(mitem,2)
+
+
     return mitem
 
 
