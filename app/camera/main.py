@@ -10,7 +10,7 @@ from app.detector.item_detector import paste_blobs, find_blobs, copy_identified_
 
 def process(frame: np.ndarray, blobs: list, stats: dict):
 
-    blurred_image = processing.gauss(frame, size=8)
+    blurred_image = processing.gauss(frame, size=3)
     new_blobs = find_blobs(blurred_image)
 
     copy_identified_blobs(blobs, new_blobs)

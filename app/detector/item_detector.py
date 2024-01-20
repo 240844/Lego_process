@@ -14,29 +14,36 @@ class Blob:
     def __str__(self):
         return f'Blob of brick{self.brick.name} at ({self.x}, {self.y})'
 
+    def getSize(self):
+        return self.w * self.h
+
+    #check if blob in last frame is similar to blob in current frame
     def is_similar(self, blob):
-        x1 = self.x
-        y1 = self.y
-        w1 = self.w
-        h1 = self.h
 
-        x2 = blob.x
-        y2 = blob.y
-        w2 = blob.w
-        h2 = blob.h
+        if not self.touching(blob):
+            return False
 
-        if (x2 <= x1 <= x2 + w2 or x1 <= x2 <= x1 + w1) and (y2 <= y1 <= y2 + h2 or y1 <= y2 <= y1 + h1):
-            return True
-        return False
+        blob1_ratio = self.w / self.h
+        blob2_ratio = blob.w / blob.h
+        ratio = blob1_ratio / blob2_ratio
+        if ratio < 0.7 or ratio > 1.3:
+            return False
+
+        size_ratio = self.getSize() / blob.getSize()
+        if size_ratio < 0.7 or size_ratio > 1.3:
+            return False
+
+        return True
+
+    #check if blobs are touching
+    def touching(self, blob):
+        return (self.x <= blob.x <= self.x + self.w or blob.x <= self.x <= blob.x + blob.w) and (self.y <= blob.y <= self.y + self.h or blob.y <= self.y <= blob.y + blob.h)
+
 
 def paste_blobs(image, blobs):
     image = image.copy()
 
     for blob in blobs:
-        x = blob.x
-        y = blob.y
-        w = blob.w
-        h = blob.h
         brick = blob.brick
 
         if brick is None:
@@ -48,9 +55,9 @@ def paste_blobs(image, blobs):
             name = brick.name
             confidence = f"{blob.confidence:.2f}"
 
-        cv2.rectangle(image, (x, y), (x + w, y + h), color, thickness=2)
-        cv2.putText(image, str(name), (x+w+10, y+10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, thickness=1 )
-        cv2.putText(image, str(confidence), (x+w+10, y+30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, thickness=1 )
+        cv2.rectangle(image, (blob.x, blob.y), (blob.x + blob.w, blob.y + blob.h), color, thickness=2)
+        cv2.putText(image, str(name), (blob.x + blob.w+10, blob.y+10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, thickness=1 )
+        cv2.putText(image, str(confidence), (blob.x + blob.w+10, blob.y+30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, thickness=1 )
 
     return image
 
@@ -81,7 +88,7 @@ def detect_new_blobs(image):
 def copy_identified_blobs(prev_blobs, new_blobs):
     for new_blob in new_blobs:
         for prev_blob in prev_blobs:
-            if prev_blob.is_similar(new_blob):
+            if prev_blob.brick is not None and prev_blob.is_similar(new_blob):
                 new_blob.brick = prev_blob.brick
                 new_blob.confidence = prev_blob.confidence
 
@@ -104,12 +111,17 @@ def classify_blob(model, blob, frame):
     return True
 
 
+def touching_edge(blob, frame_size):
+    if blob.x + blob.w >= frame_size[0] or blob.y + blob.h >= frame_size[1]:
+        return True
+    if blob.x == 0 or blob.y == 0:
+        return True
+
 
 def find_unclassified_blob(blobs, frame_size):
     for blob in blobs:
-        if blob.brick is None:
-            if blob.w * blob.h > 500 and blob.x + blob.w < frame_size[0]:
-                return blob
+        if blob.brick is None and (500 < blob.getSize() < 6000) and not touching_edge(blob, frame_size):
+            return blob
     return None
 
 def count_unclassified(blobs):
