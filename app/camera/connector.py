@@ -12,13 +12,13 @@ class Connector(QThread):
     frame_signal = pyqtSignal(np.ndarray)
     default_ip = "http://192.168.1.16"
 
-    def __init__(self, ip=default_ip, port=8080, width=540, height=960, fps=30):
+    def __init__(self, ip=default_ip, port=8080, width=540, height=960, fps_max=30):
         super().__init__()
         self.ip = ip
         self.port = port
         self.width = width
         self.height = height
-        self.fps = fps
+        self.fps = fps_max
         self.is_running = False
 
     def run(self):

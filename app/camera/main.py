@@ -33,7 +33,7 @@ camera = connector.Connector(
     port=8080,
     width=540,
     height=960,
-    fps=15
+    fps_max=15
 )
 
 
