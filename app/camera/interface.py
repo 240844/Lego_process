@@ -1,5 +1,5 @@
 from PyQt5 import QtGui
-from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QVBoxLayout
+from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QVBoxLayout, QPushButton
 from PyQt5.QtGui import QPixmap
 import cv2
 from PyQt5.QtCore import pyqtSlot, Qt
@@ -19,16 +19,20 @@ class Interface(QWidget):
         self.camera = camera
         self.process = proces
         self.blobs = []
+        self.stats = {}
+        self.title = "Lego stats:"
         self.model = model
         self.image = QLabel(self)
-        self.title = "Predictions"
         self.test_predictions = ""
-        self.text = QLabel(self.title)
+        self.stats_text = QLabel(self.title)
+        self.reset_stats_button = QPushButton('Reset stats', self)
 
         hbox = QHBoxLayout()
         vbox = QVBoxLayout()
         hbox.addWidget(self.image)
-        vbox.addWidget(self.text)
+        vbox.addWidget(self.reset_stats_button)
+        self.reset_stats_button.clicked.connect(self.reset_stats)
+        vbox.addWidget(self.stats_text)
         vbox.setAlignment(Qt.AlignTop)
         hbox.addLayout(vbox)
         self.setLayout(hbox)
@@ -36,26 +40,35 @@ class Interface(QWidget):
         self.camera.frame_signal.connect(self.update_image)
         self.camera.start()
 
+    def reset_stats(self):
+        self.stats = {}
+        self.stats_text.setText(self.title)
+        for blob in self.blobs:
+            blob.brick = None
+
     def closeEvent(self, event):
         self.camera.stop()
         event.accept()
 
-    def predictions_to_text(self, processed_image):
-        title = self.title
-        if self.model is None:
-            title = "Test " + title
-            prediction_text = "\n".join([f"var {i}: {str(random.randint(0, 100))}%" for i in range(0, 10)])
+    def view_stats(self):
+        if self.model is not None:
+            stats_text = self.stats_to_string()
         else:
-            predict = self.model.predict(processed_image)
-            prediction_text = "\n".join([str(entry) for entry in predict])
-        self.text.setText(title + "\n" + prediction_text)
+            stats_text = "No model loaded"
+
+        self.stats_text.setText(self.title + "\n" + stats_text)
+
+    def stats_to_string(self):
+        stats_string = ""
+        for key, value in self.stats.items():
+            stats_string += f"{key}: {value}\n"
+        return stats_string
 
     @pyqtSlot(np.ndarray)
     def update_image(self, cv_img):
         cv_img = crop_into_square(cv_img)
         try:
-            processed_image, self.blobs = self.process(cv_img, self.blobs)
-            #self.predictions_to_text(processed_image)
+            processed_image, self.blobs = self.process(cv_img, self.blobs, self.stats)
 
             rgb_image = cv2.cvtColor(processed_image, cv2.COLOR_BGR2RGB)
             h, w, ch = rgb_image.shape
@@ -63,6 +76,7 @@ class Interface(QWidget):
 
             pixmap_image = QPixmap.fromImage(qt_image)
             self.image.setPixmap(pixmap_image)
+            self.view_stats()
         except Exception as e:
             print("#### Image cannot be updated.")
             print(e)

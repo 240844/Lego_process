@@ -1,12 +1,11 @@
 import os
 
-import cv2
 import keras
 import numpy as np
 from keras import Sequential
 from keras.src.layers import Flatten, Conv2D, Dense, Dropout, MaxPool2D
 
-from classifier.brick_enum import LegoBrick
+from app.classifier.brick_enum import LegoBrick
 from utils import load_image, get_root_dir, view_image
 
 
@@ -16,7 +15,7 @@ class LegoBrickModel:
         self.load_model(model_filename)
 
     def load_model(self, model_filename):
-        model_path = os.path.join(get_root_dir(), 'models', model_filename)
+        model_path = os.path.join(get_root_dir()+'/../', 'models', model_filename)
         self.model = keras.src.saving.saving_api.load_model(model_path)
 
 

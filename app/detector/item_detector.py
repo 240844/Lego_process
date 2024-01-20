@@ -1,7 +1,7 @@
 import cv2
 
-from camera import processing
-from image_processing import reduce, replace_color, get_darkest_color, square
+from app.camera import processing
+from app.image_processing.image_processing import reduce, replace_color, get_darkest_color, square
 
 class Blob:
     def __init__(self, x, y, w, h, brick=None):
@@ -101,6 +101,7 @@ def classify_blob(model, blob, frame):
     blob.brick = result[0][0]
     blob.confidence = result[0][1]
     print(f"Classified blob as {blob.brick.name} with confidence {blob.confidence*100/1}")
+    return True
 
 
 

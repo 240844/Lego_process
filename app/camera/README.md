@@ -15,7 +15,7 @@
 ## Execution
 1. Create processing pipeline:
 ```python
-import camera.processing as processing
+import app.camera.processing as processing
 import numpy as np
 
 def process(frame: np.ndarray):
@@ -28,7 +28,7 @@ def process(frame: np.ndarray):
 ```
 2. Create and run connector:
 ```python
-import camera.connector as connector
+import app.camera.connector as connector
 camera = connector.Connector()
 camera.run(process)
 ```
