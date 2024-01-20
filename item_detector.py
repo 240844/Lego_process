@@ -1,95 +1,119 @@
 import cv2
-import os
-import skimage
-import numpy as np
 
+from camera import processing
+from image_processing import reduce, replace_color, get_darkest_color, square
 
-def main():
-    test = cv2.imread("example\im.png")
-    cv2.imshow("test",test)
-    cv2.waitKey()
-    l, limage = label_image(test)
-    cv2.imshow("limage",limage)
-    cv2.waitKey()
-    masked = mask_image(l,test)
-    cv2.imshow("masked",masked)
-    cv2.waitKey()
-    itemNumb = np.max(l)
-    for i in range(1, itemNumb+1):
-        item = mask_object(l, test, i)
-        cv2.imshow("item" + str(i),item)
-        cv2.waitKey()
+class Blob:
+    def __init__(self, x, y, w, h, brick=None):
+        self.x = x
+        self.y = y
+        self.w = w
+        self.h = h
+        self.brick = brick
+        self.confidence = 0
+    def __str__(self):
+        return f'Blob of brick{self.brick.name} at ({self.x}, {self.y})'
 
-    input_video_path = "example\\vid.mp4"
+    def is_similar(self, blob):
+        x1 = self.x
+        y1 = self.y
+        w1 = self.w
+        h1 = self.h
 
-    cap = cv2.VideoCapture(input_video_path)
+        x2 = blob.x
+        y2 = blob.y
+        w2 = blob.w
+        h2 = blob.h
 
-    while(cap.isOpened()):
-        ret, frame = cap.read()
-        if ret:
-            l, limage = label_image(frame)
-            m = mask_image(l, frame)
-            cv2.imshow("frame", m)
-            cv2.waitKey(1)
+        if (x2 <= x1 <= x2 + w2 or x1 <= x2 <= x1 + w1) and (y2 <= y1 <= y2 + h2 or y1 <= y2 <= y1 + h1):
+            return True
+        return False
+
+def paste_blobs(image, blobs):
+    image = image.copy()
+
+    for blob in blobs:
+        x = blob.x
+        y = blob.y
+        w = blob.w
+        h = blob.h
+        brick = blob.brick
+
+        if brick is None:
+            color = (255, 255, 255)
+            name = "Not classified"
+            confidence = ""
         else:
-            break
+            color = brick.getColor()
+            name = brick.name
+            confidence = f"{blob.confidence:.2f}"
 
-    cap.release()
-    cv2.destroyAllWindows()
-    
+        cv2.rectangle(image, (x, y), (x + w, y + h), color, thickness=2)
+        cv2.putText(image, str(name), (x+w+10, y+10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, thickness=1 )
+        cv2.putText(image, str(confidence), (x+w+10, y+30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, thickness=1 )
 
-def label_image(image):
+    return image
+
+
+def find_blobs(image, min_blob_size=100):
+    blobs = []
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
-    h ,s ,v = cv2.split(hsv)
+    h,s,v = cv2.split(hsv)
+    _, thresholded = cv2.threshold(v, 128, 255, cv2.THRESH_BINARY)
+    contours, _ = cv2.findContours(thresholded, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-    retval, thresholded = cv2.threshold(v, 0, 255, cv2.THRESH_BINARY + cv2.THRESH_OTSU)
- 
-    labels = skimage.measure.label(thresholded)
-    labeledImage = skimage.color.label2rgb(labels, image=image, bg_label=0)
-    return labels, labeledImage
+    for contour in contours:
+        x, y, w, h = cv2.boundingRect(contour)
+        if w * h >= min_blob_size:
+            new_blob = Blob(x, y, w, h, None)
+            blobs.append(new_blob)
 
-def mask_image(label, image):
-    mask = np.zeros(image.shape[:2], dtype=np.uint8)
-    mask[:,:] = (label[:,:] > 0)
-    mimage = cv2.bitwise_and(src1=image, src2=image,mask=mask)
-    return mimage 
+    return blobs
 
-def mask_object(label, image, item):
-    mask = np.zeros(image.shape[:2], dtype=np.uint8)
-    mask[:,:] = (label[:,:] == item)
-    mimage = cv2.bitwise_and(src1=image, src2=image,mask=mask)
-    all  = np.where(label == item)
-    xmin = all[0][0]
-    xmax = all[0][-1]
-    ymin = np.min(all[1])
-    ymax = np.max(all[1])
-
-    diff = (xmax-xmin) - (ymax-ymin)
-
-    if(diff<0):
-        #this part handles odd diffrences
-        diff = -diff
-        d = int(diff/2)
-        diff -= d
-
-
-        mitem = np.zeros(shape = (ymax-ymin+10,ymax-ymin+10,3),dtype = np.uint8)
-        mitem[d:ymax-ymin-diff,5:-5,:] = mimage[xmin:xmax,ymin:ymax,:]
-
-    else:
-        d = int(diff/2)
-        diff -= d
-        
-        mitem = np.zeros(shape = (xmax-xmin+10,xmax-xmin+10,3),dtype = np.uint8)
-        mitem[5:-5,d:xmax-xmin-diff,:] = mimage[xmin:xmax,ymin:ymax,:]
-    mitem = cv2.resize(mitem,(56,56))
-    #mitem = cv2.reduce(mitem,2)
-
-
-    return mitem
+def detect_new_blobs(image):
+    blurred_image = processing.gauss(image, size=8)
+    blobs = find_blobs(blurred_image)
+    image = paste_blobs(image, blobs)
+    return image, blobs
 
 
 
+def copy_identified_blobs(prev_blobs, new_blobs):
+    for new_blob in new_blobs:
+        for prev_blob in prev_blobs:
+            if prev_blob.is_similar(new_blob):
+                new_blob.brick = prev_blob.brick
+                new_blob.confidence = prev_blob.confidence
 
-if __name__ == '__main__':
-    main()
+
+
+def classify_blob(model, blob, frame):
+
+    #blob.brick = get_random_brick()
+    image = frame[blob.y:blob.y+blob.h, blob.x:blob.x+blob.w][..., ::-1]
+
+    image = reduce(image, 2)
+    image = replace_color(image, get_darkest_color(image), [0, 0, 0])
+    image = square(image, 56)
+
+    result = model.predict_brick(image)
+
+    blob.brick = result[0][0]
+    blob.confidence = result[0][1]
+    print(f"Classified blob as {blob.brick.name} with confidence {blob.confidence*100/1}")
+
+
+
+def find_unclassified_blob(blobs, frame_size):
+    for blob in blobs:
+        if blob.brick is None:
+            if blob.w * blob.h > 500 and blob.x + blob.w < frame_size[0]:
+                return blob
+    return None
+
+def count_unclassified(blobs):
+    amount = 0
+    for blob in blobs:
+        if blob.brick is not None:
+            amount += 1
+    return amount

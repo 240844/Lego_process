@@ -7,12 +7,18 @@ import numpy as np
 import random
 
 
+def crop_into_square(cv_img):
+    size = cv_img.shape[1]
+    return cv_img[0:size, 0:size]
+
+
 class Interface(QWidget):
     def __init__(self, camera, proces, model):
         super().__init__()
         self.setWindowTitle("lego_process")
         self.camera = camera
         self.process = proces
+        self.blobs = []
         self.model = model
         self.image = QLabel(self)
         self.title = "Predictions"
@@ -46,14 +52,15 @@ class Interface(QWidget):
 
     @pyqtSlot(np.ndarray)
     def update_image(self, cv_img):
+        cv_img = crop_into_square(cv_img)
         try:
-            processed_image = self.process(cv_img)
-            self.predictions_to_text(processed_image)
+            processed_image, self.blobs = self.process(cv_img, self.blobs)
+            #self.predictions_to_text(processed_image)
 
             rgb_image = cv2.cvtColor(processed_image, cv2.COLOR_BGR2RGB)
             h, w, ch = rgb_image.shape
-            qt_image = QtGui.QImage(rgb_image.data, w, w, ch * w, QtGui.QImage.Format_RGB888)
-            #qt_image = QtGui.QImage(rgb_image.data, w, h, ch * w, QtGui.QImage.Format_RGB888)
+            qt_image = QtGui.QImage(rgb_image.data, w, h, ch * w, QtGui.QImage.Format_RGB888)
+
             pixmap_image = QPixmap.fromImage(qt_image)
             self.image.setPixmap(pixmap_image)
         except Exception as e:

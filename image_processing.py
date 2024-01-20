@@ -3,6 +3,23 @@ import numpy as np
 from help_func import *
 
 
+
+def square(img, a=56):
+
+    height, width = img.shape[:2]
+    if height > width:
+        scale_factor = a / height
+    else:
+        scale_factor = a / width
+
+    resized_img = cv2.resize(img, None, fx=scale_factor, fy=scale_factor)
+    black_img = np.zeros((a, a, 3), np.uint8)
+    x_offset = int((black_img.shape[0] - resized_img.shape[0]) / 2)
+    y_offset = int((black_img.shape[1] - resized_img.shape[1]) / 2)
+    black_img[x_offset:resized_img.shape[0] + x_offset, y_offset:resized_img.shape[1] + y_offset] = resized_img
+
+    return black_img
+
 def rotate_image(image: np.ndarray, angle: int) -> np.ndarray:
     image_center = tuple(np.array(image.shape[1::-1]) / 2)
     rot_mat = cv2.getRotationMatrix2D(image_center, angle, 1.0)
@@ -210,10 +227,10 @@ def create_database():
     processor.load_images("data")
     processor.decrease_resolutions(3)  # 168x168 * (1/3) = 56x56
     processor.rotate_images(60)
-    #processor.zoom_all()
-    #processor.reduce_colors(color_amount=2)
+    processor.zoom_all()
+    processor.reduce_colors(color_amount=2)
+    processor.replace_darkest_color(new_color=(0, 0, 0))  # zamienia tlo na czarne
     processor.change_color()
-    #processor.replace_darkest_color(new_color=(0, 0, 0))  # zamienia tlo na czarne
     processor.mirror()
     processor.save()
 

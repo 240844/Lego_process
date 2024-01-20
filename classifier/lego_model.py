@@ -7,7 +7,7 @@ from keras import Sequential
 from keras.src.layers import Flatten, Conv2D, Dense, Dropout, MaxPool2D
 
 from classifier.brick_enum import LegoBrick
-from utils import load_image, get_root_dir
+from utils import load_image, get_root_dir, view_image
 
 
 class LegoBrickModel:
@@ -21,18 +21,18 @@ class LegoBrickModel:
 
 
     # image musi być w formacie RGB. inaczej wypisze bzdury
-    def predict_brick(self, imageRGB, input_shape=(56, 56)):
-        imageRGB = cv2.resize(imageRGB, input_shape)
+    def predict_brick(self, imageRGB):
+        if imageRGB.shape != (56, 56, 3):
+            raise Exception(f"Image shape is {imageRGB.shape}, but should be (56, 56, 3)")
         imageRGB = np.expand_dims(imageRGB, axis=0)
 
         predictions = self.model.predict(imageRGB)
-        print(f"Predictions: {predictions}")
+        #print(f"Predictions: {predictions}")
         result = []
         for i in range(len(LegoBrick)):
             result.append((LegoBrick(i), predictions[0][i]))
 
         result.sort(key=lambda x: x[1], reverse=True)
-
         return result
 
 
@@ -48,10 +48,6 @@ def create_model(input_shape):
     model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
     return model
 
-def view_image(imageRGB):
-    cv2.imshow('image', imageRGB[:, :, ::-1])
-    cv2.waitKey(0)
-    cv2.destroyAllWindows()
 
 # Example predict usage:
 def example(test_brick = LegoBrick.CHERRY, image_index = 36):
@@ -84,5 +80,6 @@ def test_junk():
 
 
 if __name__ == '__main__':
+    print("testing model")
     #example()
     test_junk()

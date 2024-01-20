@@ -14,3 +14,9 @@ def load_image(image_path):
     if imageRGB is None:
         print(f"Image not found: {image_path}")
     return imageRGB
+
+
+def view_image(imageRGB):
+    cv2.imshow('image', imageRGB[:, :, ::-1])
+    cv2.waitKey(0)
+    cv2.destroyAllWindows()
