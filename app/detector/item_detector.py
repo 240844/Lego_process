@@ -120,7 +120,7 @@ def touching_edge(blob, frame_size):
 
 def find_unclassified_blob(blobs, frame_size):
     for blob in blobs:
-        if blob.brick is None and (500 < blob.getSize() < 6000) and not touching_edge(blob, frame_size):
+        if blob.brick is None and (300 < blob.getSize() < 6000) and not touching_edge(blob, frame_size):
             return blob
     return None
 
