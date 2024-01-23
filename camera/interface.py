@@ -6,6 +6,10 @@ from PyQt5.QtCore import pyqtSlot, Qt
 import numpy as np
 import random
 
+# TODO Zrobić obsługę alarmu gdy p-stwo predykcji nie przekracza
+#  thresholdu
+# zrobić nasłuchiwanie klawiatury Q/Start
+# zrobić okno wprowadzania IP
 
 class Interface(QWidget):
     def __init__(self, camera, proces, model):
@@ -15,7 +19,7 @@ class Interface(QWidget):
         self.process = proces
         self.model = model
         self.image = QLabel(self)
-        self.title = "Predictions"
+        self.title = "Predictions:"
         self.test_predictions = ""
         self.text = QLabel(self.title)
 
@@ -52,6 +56,7 @@ class Interface(QWidget):
 
             rgb_image = cv2.cvtColor(processed_image, cv2.COLOR_BGR2RGB)
             h, w, ch = rgb_image.shape
+            # Dont use 'h' because I want to crop gimbal's legs
             qt_image = QtGui.QImage(rgb_image.data, w, w, ch * w, QtGui.QImage.Format_RGB888)
             #qt_image = QtGui.QImage(rgb_image.data, w, h, ch * w, QtGui.QImage.Format_RGB888)
             pixmap_image = QPixmap.fromImage(qt_image)
