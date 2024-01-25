@@ -35,7 +35,7 @@ class LegoBrickModel:
         return result
 
 
-def create_model(input_shape):
+def create_model(input_shape, optimizer='adam'):
     model = Sequential()
     model.add(Conv2D(32, 3, padding="same", activation="relu", input_shape=input_shape))
     model.add(MaxPool2D())
@@ -44,7 +44,7 @@ def create_model(input_shape):
     model.add(Dense(128, activation="relu"))
     model.add(Dense(6, activation="softmax"))
 
-    model.compile(optimizer='adam', loss='categorical_crossentropy', metrics=['accuracy'])
+    model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
     return model
 
 
