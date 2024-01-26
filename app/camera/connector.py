@@ -22,7 +22,7 @@ class Connector(QThread):
         self.is_running = False
 
     def set_ip(self, ip: str):
-        self.ip = ip
+        self.ip = "http://" + ip
 
     def run(self):
         self.is_running = True
