@@ -10,9 +10,9 @@ def create_new_lego_model(filename="lego_classifier_model", epochs=3, batch_size
 
     input_shape = (56, 56, 3) #wielkość obrazka z palca
 
-    data_dir = os.path.join(get_root_dir(), '..\data_processed')
-    data2_dir = os.path.join(get_root_dir(), '..\data')
-    save_dir = os.path.join(get_root_dir(), '..\models')
+    data_dir = os.path.join('data_processed')
+    data2_dir = os.path.join('data')
+    save_dir = os.path.join('models')
 
     if optimizer is not "none":
         model = create_model(input_shape, optimizer)
