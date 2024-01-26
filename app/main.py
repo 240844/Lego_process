@@ -37,7 +37,7 @@ camera = connector.Connector(
 )
 
 
-model = LegoBrickModel('lego_classifier_model_adam_[e=1,bs=50]' + '.keras')
+model = LegoBrickModel('lego_classifier_model_[e=1,bs=50]' + '.keras')
 
 app = QApplication(sys.argv)
 gui = interface.Interface(camera, process, model)
