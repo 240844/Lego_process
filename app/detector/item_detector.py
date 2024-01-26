@@ -63,6 +63,7 @@ def paste_blobs(image, blobs):
 
 
 def find_blobs(image, min_blob_size=100):
+    image = processing.gauss(image, size=3)
     blobs = []
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     h,s,v = cv2.split(hsv)
@@ -107,6 +108,11 @@ def classify_blob(model, blob, frame):
 
     blob.brick = result[0][0]
     blob.confidence = result[0][1]
+
+    # print result
+    for brick, confidence in result:
+        print(f"Predicted class: {brick.name}, confidence: {confidence * 100:.1f}%")
+
     print(f"Classified blob as {blob.brick.name} with confidence {blob.confidence*100/1}")
     return True
 

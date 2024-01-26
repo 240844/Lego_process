@@ -85,7 +85,8 @@ class Interface(QWidget):
         cv_img = crop_into_square(cv_img)
         try:
             self.update_fps()
-            processed_image, self.blobs = self.process(cv_img, self.blobs, self.stats)
+            classify = self.frame_counter % 5 == 0
+            processed_image, self.blobs = self.process(cv_img, self.blobs, self.stats, classify)
             processed_image = cv2.putText(processed_image, str(f"{int(self.fps)} fps"), (5, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA)
 
             rgb_image = cv2.cvtColor(processed_image, cv2.COLOR_BGR2RGB)

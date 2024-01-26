@@ -9,18 +9,17 @@ from app.classifier.lego_model import LegoBrickModel
 from app.detector.item_detector import paste_blobs, find_blobs, copy_identified_blobs, classify_blob, find_unclassified_blob, count_unclassified
 
 
-def process(frame: np.ndarray, blobs: list, stats: dict):
+def process(frame: np.ndarray, blobs: list, stats: dict, classify=True):
 
-    blurred_image = processing.gauss(frame, size=3)
-    new_blobs = find_blobs(blurred_image)
+    new_blobs = find_blobs(frame)
 
     copy_identified_blobs(blobs, new_blobs)
-
-    blob = find_unclassified_blob(new_blobs, frame.shape)
-    if blob is not None:
-        valid = classify_blob(model, blob, frame)
-        if valid:
-            stats[blob.brick.name] = stats.get(blob.brick.name, 0) + 1
+    if classify:
+        blob = find_unclassified_blob(new_blobs, frame.shape)
+        if blob is not None:
+            valid = classify_blob(model, blob, frame)
+            if valid:
+                stats[blob.brick.name] = stats.get(blob.brick.name, 0) + 1
 
     #stats_string = stats_to_string()
     #print(stats_string)
@@ -38,7 +37,7 @@ camera = connector.Connector(
 )
 
 
-model = LegoBrickModel('lego_classifier_model_[e=1,bs=50].keras')
+model = LegoBrickModel('lego_classifier_model_None_[e=1,bs=600]' + '.keras')
 
 app = QApplication(sys.argv)
 gui = interface.Interface(camera, process, model)
