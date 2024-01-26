@@ -25,7 +25,6 @@ def dilation(frame, size=5):
     return frame_dilation
 
 
-# Nie działa
 def region_props(frame):
     labels = ski.measure.label(frame)
     frame_regions = ski.measure.regionprops(labels)
