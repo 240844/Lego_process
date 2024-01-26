@@ -8,6 +8,10 @@ from PyQt5.QtCore import pyqtSlot, Qt
 import numpy as np
 import random
 
+# TODO Zrobić obsługę alarmu gdy p-stwo predykcji nie przekracza
+#  thresholdu
+# zrobić nasłuchiwanie klawiatury Q/Start
+# zrobić okno wprowadzania IP
 
 def crop_into_square(cv_img):
     size = cv_img.shape[1]

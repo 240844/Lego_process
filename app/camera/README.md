@@ -1,6 +1,7 @@
 ## Libraries
 
 - CV2
+- PyQt5
 
 ## Requirements
 
