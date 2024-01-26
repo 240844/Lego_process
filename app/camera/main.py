@@ -2,6 +2,7 @@ import connector
 import processing
 import numpy as np
 import sys
+from app.utils.config import options
 from PyQt5.QtWidgets import QApplication
 import interface
 from app.classifier.lego_model import LegoBrickModel
@@ -30,10 +31,10 @@ def process(frame: np.ndarray, blobs: list, stats: dict):
 
 
 camera = connector.Connector(
-    port=8080,
-    width=540,
-    height=960,
-    fps_max=15
+    port=options.port,
+    width=options.width,
+    height=options.height,
+    fps_max=options.fps
 )
 
 
