@@ -1,17 +1,12 @@
 import time
 
 from PyQt5 import QtGui
-from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QVBoxLayout, QPushButton
+from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QVBoxLayout, QPushButton, QInputDialog
 from PyQt5.QtGui import QPixmap
 import cv2
 from PyQt5.QtCore import pyqtSlot, Qt
 import numpy as np
-import random
 
-# TODO Zrobić obsługę alarmu gdy p-stwo predykcji nie przekracza
-#  thresholdu
-# zrobić nasłuchiwanie klawiatury Q/Start
-# zrobić okno wprowadzania IP
 
 def crop_into_square(cv_img):
     size = cv_img.shape[1]
@@ -20,6 +15,7 @@ def crop_into_square(cv_img):
 
 class Interface(QWidget):
     def __init__(self, camera, proces, model):
+        # Init variables
         super().__init__()
         self.time = time.time()
         self.fps = 0
@@ -36,6 +32,7 @@ class Interface(QWidget):
         self.reset_stats_button = QPushButton('Reset stats', self)
         self.frame_counter = 0
 
+        # Create layout
         hbox = QHBoxLayout()
         vbox = QVBoxLayout()
         hbox.addWidget(self.image)
@@ -46,6 +43,12 @@ class Interface(QWidget):
         hbox.addLayout(vbox)
         self.setLayout(hbox)
 
+        # Get IP from user
+        ip, ok = QInputDialog.getText(self, 'lego-object-detection', 'Input camera-device IP')
+        if ok:
+            camera.set_ip(ip)
+
+        # Connect with camera
         self.camera.frame_signal.connect(self.update_image)
         self.camera.start()
 
@@ -62,17 +65,12 @@ class Interface(QWidget):
 
     def view_stats(self):
         if self.model is not None:
-            stats_text = self.stats_to_string()
+            stats_string = ""
+            for key, value in self.stats.items():
+                stats_string += f"{key}: {value}\n"
         else:
-            stats_text = "No model loaded"
-
-        self.stats_text.setText(self.title + "\n" + stats_text)
-
-    def stats_to_string(self):
-        stats_string = ""
-        for key, value in self.stats.items():
-            stats_string += f"{key}: {value}\n"
-        return stats_string
+            stats_string = "No model loaded"
+        self.stats_text.setText(self.title + "\n" + stats_string)
 
     def update_fps(self):
         self.frame_counter += 1
@@ -87,7 +85,8 @@ class Interface(QWidget):
             self.update_fps()
             classify = self.frame_counter % 5 == 0
             processed_image, self.blobs = self.process(cv_img, self.blobs, self.stats, classify)
-            processed_image = cv2.putText(processed_image, str(f"{int(self.fps)} fps"), (5, 20), cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA)
+            processed_image = cv2.putText(processed_image, str(f"{int(self.fps)} fps"), (5, 20),
+                                          cv2.FONT_HERSHEY_SIMPLEX, 0.4, (255, 255, 255), 1, cv2.LINE_AA)
 
             rgb_image = cv2.cvtColor(processed_image, cv2.COLOR_BGR2RGB)
             h, w, ch = rgb_image.shape

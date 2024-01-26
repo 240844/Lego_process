@@ -1,10 +1,10 @@
-import connector
-import processing
+import camera.connector as connector
+import camera.processing as processing
+import camera.interface as interface
 import numpy as np
 import sys
 from app.utils.config import options
 from PyQt5.QtWidgets import QApplication
-import interface
 from app.classifier.lego_model import LegoBrickModel
 from app.detector.item_detector import paste_blobs, find_blobs, copy_identified_blobs, classify_blob, find_unclassified_blob, count_unclassified
 
@@ -37,7 +37,7 @@ camera = connector.Connector(
 )
 
 
-model = LegoBrickModel('lego_classifier_model_None_[e=1,bs=600]' + '.keras')
+model = LegoBrickModel('lego_classifier_model_adam_[e=1,bs=600]' + '.keras')
 
 app = QApplication(sys.argv)
 gui = interface.Interface(camera, process, model)

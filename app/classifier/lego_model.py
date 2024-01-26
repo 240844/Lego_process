@@ -15,7 +15,7 @@ class LegoBrickModel:
         self.load_model(model_filename)
 
     def load_model(self, model_filename):
-        model_path = os.path.join(get_root_dir()+'/../', 'models', model_filename)
+        model_path = os.path.join('models', model_filename)
         self.model = keras.src.saving.saving_api.load_model(model_path)
 
 

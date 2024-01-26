@@ -21,9 +21,11 @@ class Connector(QThread):
         self.fps = fps_max
         self.is_running = False
 
+    def set_ip(self, ip: str):
+        self.ip = ip
+
     def run(self):
         self.is_running = True
-        time_diff = 0
         capture = cv2.VideoCapture(f"{self.ip}:{self.port}/video")
         capture.set(cv2.CAP_PROP_FPS, self.fps)
 

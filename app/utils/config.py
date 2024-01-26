@@ -3,9 +3,9 @@ import json
 
 class Options:
     def __init__(self):
-        f = open('app/utils/config.json')
-        _options = json.load(f)
-        f.close()
+        _file = open('app/utils/config.json')
+        _options = json.load(_file)
+        _file.close()
         self.width = _options["width"]
         self.height = _options["height"]
         self.fps = _options["fps"]
