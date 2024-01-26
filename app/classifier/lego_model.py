@@ -6,7 +6,7 @@ from keras import Sequential
 from keras.src.layers import Flatten, Conv2D, Dense, Dropout, MaxPool2D
 
 from app.classifier.brick_enum import LegoBrick
-from app.utils.utils import load_image, get_root_dir, view_image
+from app.utils.utils import load_image, view_image
 
 
 class LegoBrickModel:
@@ -41,7 +41,9 @@ def create_model(input_shape, optimizer='adam'):
     model.add(MaxPool2D())
     model.add(Dropout(0.4))
     model.add(Flatten())
-    model.add(Dense(128, activation="relu"))
+    for i in range(0, 5):
+        model.add(Dense(128, activation="relu"))
+        #model.add(Dropout(0.4))
     model.add(Dense(6, activation="softmax"))
 
     model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])

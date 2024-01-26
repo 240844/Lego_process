@@ -114,6 +114,7 @@ def classify_blob(model, blob, frame):
         print(f"Predicted class: {brick.name}, confidence: {confidence * 100:.1f}%")
 
     print(f"Classified blob as {blob.brick.name} with confidence {blob.confidence*100/1}")
+    #cv2.imshow(blob.brick.name + str(blob.confidence), cv2.resize(image[..., ::-1], (112, 112)))
     return True
 
 
@@ -126,7 +127,7 @@ def touching_edge(blob, frame_size):
 
 def find_unclassified_blob(blobs, frame_size):
     for blob in blobs:
-        if blob.brick is None and (300 < blob.getSize() < 6000) and not touching_edge(blob, frame_size):
+        if blob.brick is None and (300 < blob.getSize() < 9000) and not touching_edge(blob, frame_size):
             return blob
     return None
 

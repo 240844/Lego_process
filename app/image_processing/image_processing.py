@@ -63,6 +63,16 @@ def zoom_in(image: np.ndarray, scale: int = 50) -> np.ndarray:
     return new_image
 
 
+def change_color_by_vector(image, random_vector):
+    new_image = np.zeros_like(image)
+    for x in range(image.shape[0]):
+        for y in range(image.shape[1]):
+            pixel = image[x, y]
+            clamped_pixel = np.clip(pixel + random_vector, 0, 255)
+            new_image[x, y] = clamped_pixel
+    return new_image
+
+
 class ImageProcessor:
 
     def __init__(self):
@@ -217,8 +227,9 @@ class ImageProcessor:
             images = self.folders[folder_name]
             new_images = []
             for image in images:
-                new_images.append(cv2.convertScaleAbs(image, alpha=1, beta=10))
-                new_images.append(cv2.convertScaleAbs(image, alpha=-1, beta=5))
+                for i in range(2):
+                    random_vector = np.random.randint(-50, 50, 3)
+                    new_images.append(change_color_by_vector(image, random_vector))
             images.extend(new_images)
         self.print_status()
         return None

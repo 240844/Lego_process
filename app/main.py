@@ -1,5 +1,4 @@
 import camera.connector as connector
-import camera.processing as processing
 import camera.interface as interface
 import numpy as np
 import sys
@@ -20,10 +19,11 @@ def process(frame: np.ndarray, blobs: list, stats: dict, classify=True):
             valid = classify_blob(model, blob, frame)
             if valid:
                 stats[blob.brick.name] = stats.get(blob.brick.name, 0) + 1
+                print(f"Classified {count_unclassified(new_blobs)}/{len(new_blobs)} blobs")
 
     #stats_string = stats_to_string()
     #print(stats_string)
-    print(f"Classified {count_unclassified(new_blobs)}/{len(new_blobs)} blobs")
+    #print(f"Classified {count_unclassified(new_blobs)}/{len(new_blobs)} blobs")
 
     image = paste_blobs(frame, new_blobs)
     return image, new_blobs
@@ -37,7 +37,7 @@ camera = connector.Connector(
 )
 
 
-model = LegoBrickModel('lego_classifier_model_adam_[e=1,bs=50]' + '.keras')
+model = LegoBrickModel('lego_classifier_model_test_split_adam_[e=5,bs=600]' + '.keras')
 
 app = QApplication(sys.argv)
 gui = interface.Interface(camera, process, model)
