@@ -1,5 +1,6 @@
 import time
 
+from app.utils.config import options
 from PyQt5 import QtGui
 from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QVBoxLayout, QPushButton, QInputDialog
 from PyQt5.QtGui import QPixmap
@@ -44,7 +45,7 @@ class Interface(QWidget):
         self.setLayout(hbox)
 
         # Get IP from user
-        ip, ok = QInputDialog.getText(self, 'lego-object-detection', 'Input camera-device IP')
+        ip, ok = QInputDialog.getText(self, 'lego-object-detection', 'Input camera-device IP', text=options.ip)
         if ok:
             camera.set_ip(ip)
 
