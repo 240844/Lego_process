@@ -18,11 +18,11 @@ def process(frame: np.ndarray, blobs: list, labels: dict, classify=True):
     if classify:
         blob = find_unclassified_blob(new_blobs, frame.shape)
         if blob is not None:
-            valid = classify_blob(model, blob, frame)
-            if valid:
-                labels[blob.brick.name] = labels.get(blob.brick.name, 0) + 1
+            classify_blob(model, blob, frame)
+            labels[blob.brick.name] = labels.get(blob.brick.name, 0) + 1
+            print(f"Classified {count_unclassified(new_blobs)}/{len(new_blobs)} blobs")
 
-    print(f"Classified {count_unclassified(new_blobs)}/{len(new_blobs)} blobs")
+
 
     return frame, new_blobs, labels
 
@@ -34,7 +34,7 @@ camera = connector.Connector(
 )
 
 
-model = LegoBrickModel('lego_classifier_model_test_split_adam_[e=5,bs=600]' + '.keras')
+model = LegoBrickModel('lego_classifier_adam_[e=5,bs=600]' + '.keras')
 
 app = QApplication(sys.argv)
 gui = interface.Interface(camera, process, model)

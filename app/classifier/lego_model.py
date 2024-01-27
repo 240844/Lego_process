@@ -1,4 +1,5 @@
 import os
+import time
 
 import keras
 import numpy as np
@@ -21,6 +22,7 @@ class LegoBrickModel:
 
     # image musi być w formacie RGB. inaczej wypisze bzdury
     def predict_brick(self, imageRGB):
+        start = time.time()
         if imageRGB.shape != (56, 56, 3):
             raise Exception(f"Image shape is {imageRGB.shape}, but should be (56, 56, 3)")
         imageRGB = np.expand_dims(imageRGB, axis=0)
@@ -31,13 +33,15 @@ class LegoBrickModel:
         for i in range(len(LegoBrick)):
             result.append((LegoBrick(i), predictions[0][i]))
 
+        print(f"Classification took: {time.time() - start:.3f}s")
+
         result.sort(key=lambda x: x[1], reverse=True)
         return result
 
 
 def create_model(input_shape, optimizer='adam'):
     model = Sequential()
-    model.add(Conv2D(32, 3, padding="same", activation="relu", input_shape=input_shape))
+    model.add(Conv2D(3, 3, padding="same", activation="relu", input_shape=input_shape))
     model.add(MaxPool2D())
     model.add(Dropout(0.4))
     model.add(Flatten())

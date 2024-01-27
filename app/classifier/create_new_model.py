@@ -39,5 +39,5 @@ def create_new_lego_model(filename="lego_classifier_model", epochs=3, batch_size
     model.save(f'{save_dir}/{filename}_{optimizer}_[e={epochs},bs={batch_size}].keras')
 
 if __name__ == '__main__':
-    create_new_lego_model("lego_classifier_model_test_split", epochs=5, batch_size=600, optimizer='adam')
+    create_new_lego_model("lego_classifier", epochs=5, batch_size=600, optimizer='adam')
 
