@@ -3,7 +3,7 @@ import os
 import cv2
 import numpy as np
 
-from utils import save_img, replace_color, get_darkest_color, reduce, decrease_resolution, get_avg
+from app.utils.utils import save_img, replace_color, get_darkest_color, reduce, decrease_resolution, get_avg
 
 
 def square(img, a=56):

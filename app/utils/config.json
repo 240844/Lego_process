@@ -1,8 +1,9 @@
 {
-    "width": 100,
-    "height": 100,
+    "width": 480,
+    "height": 640,
     "fps": 30,
-    "ip": "http://192.168.173.194",
+    "ip": "192.168.0.4",
     "port": 8080,
-    "threshold": 0.5
+    "threshold": 0.5,
+    "frames_per_sample": 5
 }

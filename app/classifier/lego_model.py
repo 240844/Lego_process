@@ -6,7 +6,7 @@ from keras import Sequential
 from keras.src.layers import Flatten, Conv2D, Dense, Dropout, MaxPool2D
 
 from app.classifier.brick_enum import LegoBrick
-from utils import load_image, get_root_dir, view_image
+from app.utils.utils import load_image, get_root_dir, view_image
 
 
 class LegoBrickModel:
@@ -15,8 +15,8 @@ class LegoBrickModel:
         self.load_model(model_filename)
 
     def load_model(self, model_filename):
-        model_path = os.path.join(get_root_dir()+'/../', 'models', model_filename)
-        self.model = keras.src.saving.saving_api.load_model(model_path)
+        model_path = os.path.join('models', model_filename)
+        self.model = keras.saving.load_model(model_path)
 
 
     # image musi być w formacie RGB. inaczej wypisze bzdury
@@ -65,7 +65,7 @@ def example(test_brick = LegoBrick.CHERRY, image_index = 36):
 def test_junk():
     model = LegoBrickModel('lego_classifier_model_[e=1,bs=50].keras')
 
-    for filename in os.listdir(os.path.join(get_root_dir(), 'junk_items')):
+    for filename in os.listdir(os.path.join('junk_items')):
         print(filename)
         image_path = f'junk_items/{filename}'
         imageRGB = load_image(image_path)  # image musi być w formacie RGB

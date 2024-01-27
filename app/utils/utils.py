@@ -81,7 +81,7 @@ def get_root_dir():
 
 #zwraca obrazek w formacie RGB
 def load_image(image_path):
-    image_path = os.path.join(get_root_dir(), image_path)
+    image_path = os.path.join(image_path)
     imageRGB = cv2.imread(image_path)[..., ::-1] # BGR -> RGB
     if imageRGB is None:
         print(f"Image not found: {image_path}")
