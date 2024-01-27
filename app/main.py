@@ -6,7 +6,7 @@ import sys
 from app.utils.config import options
 from PyQt5.QtWidgets import QApplication
 from app.classifier.lego_model import LegoBrickModel
-from app.detector.item_detector import paste_blobs, find_blobs, copy_identified_blobs, classify_blob, \
+from app.detector.item_detector import find_blobs, copy_identified_blobs, classify_blob, \
     find_unclassified_blob, count_unclassified
 
 
@@ -24,8 +24,7 @@ def process(frame: np.ndarray, blobs: list, stats: dict, classify=True):
 
     print(f"Classified {count_unclassified(new_blobs)}/{len(new_blobs)} blobs")
 
-    image = paste_blobs(frame, new_blobs)
-    return image, new_blobs
+    return frame, new_blobs
 
 
 # Create camera object
