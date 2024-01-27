@@ -2,7 +2,7 @@ import time
 from app.camera.connector import Connector
 from app.utils.config import options
 from PyQt5 import QtGui
-from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QVBoxLayout, QPushButton, QInputDialog, QSizePolicy
+from PyQt5.QtWidgets import QWidget, QLabel, QHBoxLayout, QVBoxLayout, QPushButton, QInputDialog, QSizePolicy, QLineEdit
 from PyQt5.QtGui import QPixmap
 import cv2
 from PyQt5.QtCore import pyqtSlot, Qt
@@ -27,6 +27,11 @@ class Interface(QWidget):
         self.stats_text = QLabel(self.title)
         self.alarm_label = QLabel("Alarm! Unclassified objects!")
         self.reset_stats_button = QPushButton('Reset stats', self)
+        self.reset_stats_button.clicked.connect(self.resetStats)
+
+        self.pause_button = QPushButton('Pause', self)
+        self.pause_button.clicked.connect(self.togglePause)
+
         self.frame_counter = 0
         self.alarm = False
         policy = QSizePolicy()
@@ -39,7 +44,7 @@ class Interface(QWidget):
         vbox.addWidget(self.alarm_label)
         self.alarm_label.setSizePolicy(policy)
         vbox.addWidget(self.reset_stats_button)
-        self.reset_stats_button.clicked.connect(self.resetStats)
+        vbox.addWidget(self.pause_button)
         vbox.addWidget(self.stats_text)
         vbox.setAlignment(Qt.AlignTop)
         hbox.addLayout(vbox)
@@ -49,7 +54,8 @@ class Interface(QWidget):
         ip, ok = QInputDialog.getText(self, 'lego-object-detection', 'Input camera-device IP', text=options.ip)
         if ok:
             camera.set_ip(ip)
-            options.save_default_ip(ip)
+            options.ip = ip
+            options.saveConfig()
 
         # Connect with camera
         self.camera.frame_signal.connect(self.updateImage)
@@ -67,6 +73,14 @@ class Interface(QWidget):
         for blob in self.blobs:
             blob.brick = None
             blob.confidence = None
+
+    def togglePause(self):
+        if self.pause_button.text() == "Pause":
+            self.pause_button.setText("Resume")
+            self.camera.close()
+        else:
+            self.pause_button.setText("Pause")
+            self.camera.start()
 
     def handleAlarm(self):
         self.alarm_label.setVisible(self.alarm)

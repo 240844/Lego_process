@@ -2,6 +2,8 @@ import cv2
 
 from app.camera import processing
 from app.image_processing.image_processing import reduce, replace_color, get_darkest_color, square
+from app.utils.config import options
+
 
 class Blob:
     def __init__(self, x, y, w, h, brick=None):
@@ -37,29 +39,9 @@ class Blob:
 
     #check if blobs are touching
     def touching(self, blob):
-        return (self.x <= blob.x <= self.x + self.w or blob.x <= self.x <= blob.x + blob.w) and (self.y <= blob.y <= self.y + self.h or blob.y <= self.y <= blob.y + blob.h)
+        return ((self.x <= blob.x <= self.x + self.w or blob.x <= self.x <= blob.x + blob.w)
+                and (self.y <= blob.y <= self.y + self.h or blob.y <= self.y <= blob.y + blob.h))
 
-
-def paste_blobs(image, blobs):
-    image = image.copy()
-
-    for blob in blobs:
-        brick = blob.brick
-
-        if brick is None:
-            color = (255, 255, 255)
-            name = "Not classified"
-            confidence = ""
-        else:
-            color = brick.getColor()
-            name = brick.name
-            confidence = f"{blob.confidence:.2f}"
-
-        cv2.rectangle(image, (blob.x, blob.y), (blob.x + blob.w, blob.y + blob.h), color, thickness=2)
-        cv2.putText(image, str(name), (blob.x + blob.w+10, blob.y+10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, thickness=1 )
-        cv2.putText(image, str(confidence), (blob.x + blob.w+10, blob.y+30), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color, thickness=1 )
-
-    return image
 
 
 def find_blobs(image, min_blob_size=100):
@@ -67,7 +49,7 @@ def find_blobs(image, min_blob_size=100):
     blobs = []
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
     h,s,v = cv2.split(hsv)
-    _, thresholded = cv2.threshold(v, 128, 255, cv2.THRESH_BINARY)
+    _, thresholded = cv2.threshold(v, options.threshold*255, 255, cv2.THRESH_BINARY)
     contours, _ = cv2.findContours(thresholded, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
     for contour in contours:
@@ -78,11 +60,6 @@ def find_blobs(image, min_blob_size=100):
 
     return blobs
 
-def detect_new_blobs(image):
-    blurred_image = processing.gauss(image, size=8)
-    blobs = find_blobs(blurred_image)
-    image = paste_blobs(image, blobs)
-    return image, blobs
 
 
 
@@ -114,7 +91,7 @@ def classify_blob(model, blob, frame):
         print(f"Predicted class: {brick.name}, confidence: {confidence * 100:.1f}%")
 
     print(f"Classified blob as {blob.brick.name} with confidence {blob.confidence*100/1}")
-    return True
+    #cv2.imshow(blob.brick.name + str(blob.confidence), cv2.resize(image[..., ::-1], (112, 112)))
 
 
 def touching_edge(blob, frame_size):
@@ -126,7 +103,7 @@ def touching_edge(blob, frame_size):
 
 def find_unclassified_blob(blobs, frame_size):
     for blob in blobs:
-        if blob.brick is None and (300 < blob.getSize() < 6000) and not touching_edge(blob, frame_size):
+        if blob.brick is None and (options.min_object_size < blob.getSize() < options.max_object_size) and not touching_edge(blob, frame_size):
             return blob
     return None
 
