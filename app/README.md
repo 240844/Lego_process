@@ -2,6 +2,7 @@
 
 - CV2
 - PyQt5
+- TensorFlow 2.15
 
 ## Requirements
 
@@ -11,7 +12,9 @@
 ## Installation
 
 1. Download openCV library: `pip3 install opencv-python`
-2. Install application in mobile device: **IP Webcam**
+2. Download TensorFlow library `pip3 install tensorflow=2.15`
+3. Install application in mobile device: **IP Webcam**
+4. Turn off warnings by set environmental variable `TF_ENABLE_ONEDNN_OPTS=0`
 
 ## Execution
 1. Create processing pipeline:

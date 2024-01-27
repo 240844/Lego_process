@@ -16,7 +16,7 @@ class LegoBrickModel:
 
     def load_model(self, model_filename):
         model_path = os.path.join('models', model_filename)
-        self.model = keras.src.saving.saving_api.load_model(model_path)
+        self.model = keras.saving.load_model(model_path)
 
 
     # image musi być w formacie RGB. inaczej wypisze bzdury
