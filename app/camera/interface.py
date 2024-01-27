@@ -77,8 +77,6 @@ class Interface(QWidget):
         else:
             self.alarm_label.setStyleSheet("QLabel { background-color : white; color : red; }")
 
-
-
     # Update object classification labels.
     def updateLabels(self):
         if self.model is not None:
@@ -122,16 +120,15 @@ class Interface(QWidget):
                         thickness=1)
             cv2.putText(image, str(confidence), (blob.x + blob.w + 10, blob.y + 30), cv2.FONT_HERSHEY_SIMPLEX, 0.5,
                         color, thickness=1)
-
         return image
 
     # Update image view in UI window.
     @pyqtSlot(np.ndarray)
     def updateImage(self, cv_img):
-        cv_img = self.crop_into_square(cv_img)
+        cv_img = cv_img[0:cv_img.shape[1], 0:cv_img.shape[1]]
         try:
             classify = self.frame_counter % options.frames_per_sample == 0
-            processed_image, self.blobs = self.process(cv_img, self.blobs, self.stats, classify)
+            processed_image, self.blobs, self.stats = self.process(cv_img, self.blobs, self.stats, classify)
             processed_image = self.updateBlobs(processed_image)
             processed_image = self.updateFps(processed_image)
 
@@ -147,8 +144,3 @@ class Interface(QWidget):
             print("#### Image cannot be updated.")
             print(e)
             exit(1)
-
-    @staticmethod
-    def crop_into_square(cv_img):
-        size = cv_img.shape[1]
-        return cv_img[0:size, 0:size]

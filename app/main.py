@@ -11,7 +11,7 @@ from app.detector.item_detector import find_blobs, copy_identified_blobs, classi
 
 
 # Create process pipeline
-def process(frame: np.ndarray, blobs: list, stats: dict, classify=True):
+def process(frame: np.ndarray, blobs: list, labels: dict, classify=True):
     new_blobs = find_blobs(frame)
 
     copy_identified_blobs(blobs, new_blobs)
@@ -20,19 +20,18 @@ def process(frame: np.ndarray, blobs: list, stats: dict, classify=True):
         if blob is not None:
             valid = classify_blob(model, blob, frame)
             if valid:
-                stats[blob.brick.name] = stats.get(blob.brick.name, 0) + 1
+                labels[blob.brick.name] = labels.get(blob.brick.name, 0) + 1
 
     print(f"Classified {count_unclassified(new_blobs)}/{len(new_blobs)} blobs")
 
-    return frame, new_blobs
+    return frame, new_blobs, labels
 
 
 # Create camera object
 camera = connector.Connector(
     port=options.port,
     width=options.width,
-    height=options.height,
-    fps_max=options.fps
+    height=options.height
 )
 
 # Load learned model
