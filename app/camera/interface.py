@@ -79,10 +79,13 @@ class Interface(QWidget):
 
     # Update object classification labels.
     def updateLabels(self):
+        self.alarm = False
         if self.model is not None:
             stats_string = ""
             for key, value in self.stats.items():
-                stats_string += f"{key}: {value}\n"
+                if value < options.threshold:
+                    self.alarm = True
+                    stats_string += f"{key}: {value}\n"
         else:
             stats_string = "No model loaded"
         self.stats_text.setText(self.title + "\n" + stats_string)
@@ -100,7 +103,6 @@ class Interface(QWidget):
     # Update rectangles around objects.
     def updateBlobs(self, image):
         image = image.copy()
-        self.alarm = False
 
         for blob in self.blobs:
             brick = blob.brick
