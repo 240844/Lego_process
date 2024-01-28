@@ -13,6 +13,7 @@ class Blob:
         self.h = h
         self.brick = brick
         self.confidence = 0
+        self.unwanted = False
     def __str__(self):
         return f'Blob of brick{self.brick.name} at ({self.x}, {self.y})'
 
@@ -69,6 +70,7 @@ def copy_identified_blobs(prev_blobs, new_blobs):
             if prev_blob.brick is not None and prev_blob.is_similar(new_blob):
                 new_blob.brick = prev_blob.brick
                 new_blob.confidence = prev_blob.confidence
+                new_blob.unwanted = prev_blob.unwanted
 
 
 
@@ -103,8 +105,16 @@ def touching_edge(blob, frame_size):
 
 def find_unclassified_blob(blobs, frame_size):
     for blob in blobs:
-        if blob.brick is None and (options.min_object_size < blob.getSize() < options.max_object_size) and not touching_edge(blob, frame_size):
-            return blob
+
+        if not touching_edge(blob, frame_size):
+            if blob.brick is None:
+                if blob.getSize() < options.min_object_size or blob.getSize() > options.max_object_size:
+                    blob.unwanted = True
+                return blob
+            else:
+                if blob.confidence < options.alarm_threshold:
+                    blob.unwanted = True
+
     return None
 
 def count_unclassified(blobs):

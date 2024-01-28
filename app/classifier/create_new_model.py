@@ -1,5 +1,6 @@
 import os
 
+import numpy as np
 from keras.src.preprocessing.image import ImageDataGenerator
 from sklearn.model_selection import train_test_split
 

@@ -25,7 +25,7 @@ class Interface(QWidget):
         self.image = QLabel(self)
         self.test_predictions = ""
         self.stats_text = QLabel(self.title)
-        self.alarm_label = QLabel("Alarm! Unclassified objects!")
+        self.alarm_label = QLabel("Alarm! Unwanted objects!")
         self.reset_stats_button = QPushButton('Reset stats', self)
         self.reset_stats_button.clicked.connect(self.resetStats)
 
@@ -94,14 +94,12 @@ class Interface(QWidget):
     # Update object classification labels.
     def updateLabels(self):
         self.alarm = False
-        if self.model is not None:
+        if self.model is None:
+            stats_string = "No model loaded"
+        else:
             stats_string = ""
             for key, value in self.stats.items():
-                if value < options.threshold:
-                    self.alarm = True
-                    stats_string += f"{key}: {value}\n"
-        else:
-            stats_string = "No model loaded"
+                stats_string += f"{key}: {value}\n"
         self.stats_text.setText(self.title + "\n" + stats_string)
 
     # Update frames per second label.
@@ -121,16 +119,20 @@ class Interface(QWidget):
         for blob in self.blobs:
             brick = blob.brick
 
-            if brick is None:
-                color = (255, 255, 255)
+            if blob.unwanted:
+                self.alarm = True
+                name = "Unwanted"
+                confidence = ""
+                color = (255, 255 * self.frame_counter / options.frames_per_sample, 0)
+            elif brick is None:
                 name = "Not classified"
                 confidence = ""
-                self.alarm = True
+                color = (255, 255, 255)
+
             else:
                 color = brick.getColor()
                 name = brick.name
                 confidence = f"{blob.confidence:.2f}"
-
             cv2.rectangle(image, (blob.x, blob.y), (blob.x + blob.w, blob.y + blob.h), color, thickness=2)
             cv2.putText(image, str(name), (blob.x + blob.w + 10, blob.y + 10), cv2.FONT_HERSHEY_SIMPLEX, 0.5, color,
                         thickness=1)

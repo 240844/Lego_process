@@ -7,6 +7,7 @@ from keras import Sequential
 from keras.src.layers import Flatten, Conv2D, Dense, Dropout, MaxPool2D
 
 from app.classifier.brick_enum import LegoBrick
+from app.image_processing.image_processing import change_color_by_vector
 from app.utils.utils import load_image, view_image
 
 
@@ -61,7 +62,7 @@ def example(test_brick = LegoBrick.CHERRY, image_index = 36):
     imageRGB = load_image(image_path)  # image musi być w formacie RGB
     view_image(imageRGB)
 
-    model = LegoBrickModel('lego_classifier_model_[e=10,bs=32].keras')
+    model = LegoBrickModel('lego_classifier_adam_[e=5,bs=600].keras')
     result = model.predict_brick(imageRGB)
 
     for brick, confidence in result:
@@ -69,7 +70,7 @@ def example(test_brick = LegoBrick.CHERRY, image_index = 36):
 
 
 def test_junk():
-    model = LegoBrickModel('lego_classifier_model_[e=1,bs=50].keras')
+    model = LegoBrickModel('lego_classifier_adam_[e=5,bs=600].keras')
 
     for filename in os.listdir(os.path.join('junk_items')):
         print(filename)
@@ -84,7 +85,38 @@ def test_junk():
             print(f"Predicted class: {brick.name}, confidence: {confidence * 100:.1f}%")
 
 
+def view_confusion_matrix(model_filename):
+    model = LegoBrickModel(model_filename)
+    matrix = np.zeros((6, 6))
+    for brick in LegoBrick:
+        for i in range(0, 100):
+            image_path = f'data_processed/{brick.name}/{brick.name}_{i}.png'
+            imageRGB = load_image(image_path)  # image musi być w formacie RGB
+            random_vector = np.random.randint(-20, 20, 3)
+            imageRGB = change_color_by_vector(imageRGB, random_vector)
+            result = model.predict_brick(imageRGB)
+            matrix[brick.value][result[0][0].value] += 1
+    import matplotlib.pyplot as plt
+    fig, ax = plt.subplots()
+    im = ax.imshow(matrix)
+    ax.set_xticks(np.arange(6))
+    ax.set_yticks(np.arange(6))
+    ax.set_xticklabels([brick.name for brick in LegoBrick])
+    ax.set_yticklabels([brick.name for brick in LegoBrick])
+    plt.setp(ax.get_xticklabels(), rotation=45, ha="right", rotation_mode="anchor")
+    for i in range(6):
+        for j in range(6):
+            text = ax.text(j, i, matrix[i, j], ha="center", va="center", color="w")
+
+    accuracy = np.trace(matrix) / np.sum(matrix)
+    ax.set_title(f"Confusion matrix, accuracy: {accuracy*100:.2f}%")
+    fig.tight_layout()
+    plt.show()
+
+
+
 if __name__ == '__main__':
     print("testing model")
     #example()
-    test_junk()
+    #test_junk()
+    view_confusion_matrix('lego_classifier_adam_[e=5,bs=600].keras')
