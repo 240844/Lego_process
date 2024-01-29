@@ -2,11 +2,11 @@
     "width": 720,
     "height": 1280,
     "fps": 30,
-    "ip": "192.168.1.16",
+    "ip": "192.168.18.2",
     "port": 8080,
     "threshold": 0.5,
-    "alarm_threshold": 0.5,
+    "alarm_threshold": 0.8,
     "frames_per_sample": 5,
     "min_object_size": 300,
-    "max_object_size": 9000
+    "max_object_size": 3000
 }

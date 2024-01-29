@@ -6,21 +6,48 @@ from app.utils.config import options
 
 
 class Blob:
+    """
+    Class representing an object found in the image.
+    """
     def __init__(self, x, y, w, h, brick=None):
-        self.x = x
-        self.y = y
-        self.w = w
-        self.h = h
-        self.brick = brick
-        self.confidence = 0
-        self.unwanted = False
+
+        self.x = x # x coordinate of top left corner of blob
+        self.y = y # y coordinate of top left corner of blob
+
+        self.w = w # width of blob
+        self.h = h # height of blob
+
+        self.brick = brick # classification result
+        self.confidence = 0 # confidence of classification result
+
+        self.unwanted = False # turns on alarm if blob is unwanted
     def __str__(self):
-        return f'Blob of brick{self.brick.name} at ({self.x}, {self.y})'
+        return f'Blob of brick {self.brick.name} at ({self.x}, {self.y})'
 
     def getSize(self):
         return self.w * self.h
 
-    #check if blob in last frame is similar to blob in current frame
+    """
+    Check if blob is too big or too small to be one of the bricks.
+    """
+    def is_wrong_size(self):
+        if self.getSize() < options.min_object_size or self.getSize() > options.max_object_size:
+            return True
+        return False
+
+    """
+    Check if blob is already classified / marked as unwanted.
+    """
+    def is_classified(self):
+        if self.brick is not None:
+            return True
+        if self.unwanted is True:
+            return True
+        return False
+
+    """
+    Check if two blobs are similar enough to be considered the same object.
+    """
     def is_similar(self, blob):
 
         if not self.touching(blob):
@@ -38,14 +65,67 @@ class Blob:
 
         return True
 
+    def mark_as_unwanted(self):
+        if self.unwanted is True:
+            pass
+        self.unwanted = True
+        self.brick = None
+        self.confidence = 0
+
     #check if blobs are touching
     def touching(self, blob):
         return ((self.x <= blob.x <= self.x + self.w or blob.x <= self.x <= blob.x + blob.w)
                 and (self.y <= blob.y <= self.y + self.h or blob.y <= self.y <= blob.y + blob.h))
 
+    """
+    Check if blob is touching the edge of the frame.
+    """
+    def is_touching_edge(self, frame_size):
+        if self.x + self.w >= frame_size[0] or self.y + self.h >= frame_size[1]:
+            return True
+        if self.x == 0 or self.y == 0:
+            return True
+        return False
+
+    """
+    Check if blob is unwanted based on confidence.
+    """
+    def is_confidence_too_low(self):
+        if self.is_classified() and self.confidence < options.alarm_threshold:
+            print(f"Found unwanted object of confidence {self.confidence * 100:.1f}, size {self.getSize()}")
+            return True
+        return False
+
+    """
+    Classify blob using model.
+    """
+    def classify(self, model, frame):
+
+        # blob.brick = get_random_brick()
+        image = frame[self.y:self.y + self.h, self.x:self.x + self.w][..., ::-1]
+
+        image = reduce(image, 2)
+        image = replace_color(image, get_darkest_color(image), [0, 0, 0])
+        image = square(image, 56)
+
+        result = model.predict_brick(image)
+
+        self.brick = result[0][0]
+        self.confidence = result[0][1]
+
+        # print result
+        # for brick, confidence in result:
+        #    print(f"Predicted class: {brick.name}, confidence: {confidence * 100:.1f}%")
+
+        print(f"Classified blob as {self.brick.name} with confidence {self.confidence * 100 / 1}")
+        # cv2.imshow(blob.brick.name + str(blob.confidence), cv2.resize(image[..., ::-1], (112, 112)))
 
 
-def find_blobs(image, min_blob_size=100):
+
+"""
+Find objects in image.
+"""
+def find_blobs(image, min_blob_size=100) -> list[Blob]:
     image = processing.gauss(image, size=3)
     blobs = []
     hsv = cv2.cvtColor(image, cv2.COLOR_BGR2HSV)
@@ -61,62 +141,40 @@ def find_blobs(image, min_blob_size=100):
 
     return blobs
 
-
-
-
+"""
+Carry over classification results from previous frame to current frame.
+"""
 def copy_identified_blobs(prev_blobs, new_blobs):
     for new_blob in new_blobs:
         for prev_blob in prev_blobs:
-            if prev_blob.brick is not None and prev_blob.is_similar(new_blob):
-                new_blob.brick = prev_blob.brick
-                new_blob.confidence = prev_blob.confidence
+
+            if prev_blob.is_similar(new_blob):
                 new_blob.unwanted = prev_blob.unwanted
 
+                if prev_blob.is_classified():
+                    new_blob.brick = prev_blob.brick
+                    new_blob.confidence = prev_blob.confidence
 
 
-def classify_blob(model, blob, frame):
-
-    #blob.brick = get_random_brick()
-    image = frame[blob.y:blob.y+blob.h, blob.x:blob.x+blob.w][..., ::-1]
-
-    image = reduce(image, 2)
-    image = replace_color(image, get_darkest_color(image), [0, 0, 0])
-    image = square(image, 56)
-
-    result = model.predict_brick(image)
-
-    blob.brick = result[0][0]
-    blob.confidence = result[0][1]
-
-    # print result
-    for brick, confidence in result:
-        print(f"Predicted class: {brick.name}, confidence: {confidence * 100:.1f}%")
-
-    print(f"Classified blob as {blob.brick.name} with confidence {blob.confidence*100/1}")
-    #cv2.imshow(blob.brick.name + str(blob.confidence), cv2.resize(image[..., ::-1], (112, 112)))
-
-
-def touching_edge(blob, frame_size):
-    if blob.x + blob.w >= frame_size[0] or blob.y + blob.h >= frame_size[1]:
-        return True
-    if blob.x == 0 or blob.y == 0:
-        return True
-
-
+"""
+Find the first unclassified blob that is not touching the edge of the frame, in order to classify it.
+"""
 def find_unclassified_blob(blobs, frame_size):
+
     for blob in blobs:
 
-        if not touching_edge(blob, frame_size):
-            if blob.brick is None:
-                if blob.getSize() < options.min_object_size or blob.getSize() > options.max_object_size:
-                    blob.unwanted = True
-                return blob
-            else:
-                if blob.confidence < options.alarm_threshold:
-                    blob.unwanted = True
+        if blob.is_touching_edge(frame_size):
+            continue
+
+        if blob.is_classified() is False:
+            print(f"Found unclassified object of size {blob.getSize()}")
+            return blob
 
     return None
 
+"""
+Count the number of unclassified blobs.
+"""
 def count_unclassified(blobs):
     amount = 0
     for blob in blobs:

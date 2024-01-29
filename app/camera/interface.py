@@ -10,19 +10,19 @@ import numpy as np
 
 
 class Interface(QWidget):
-    def __init__(self, camera: Connector, proces, model):
+    def __init__(self, camera: Connector, process, model):
         # Init variables
         super().__init__()
         self.time = time.time()
-        self.fps = 0
-        self.setWindowTitle("lego_process")
+        self.fps = 0 # calculated frames per second, initialized to 0
+        self.setWindowTitle("LEGO Classifier Project")
         self.camera = camera
-        self.process = proces
-        self.blobs = []
-        self.stats = {}
+        self.process = process # process function
+        self.blobs = [] # list of objects found in image
+        self.stats = {} # statistics of classified objects
         self.title = "Lego stats:"
-        self.model = model
-        self.image = QLabel(self)
+        self.model = model # model used for classification
+        self.image = QLabel(self) # stream of images from camera
         self.test_predictions = ""
         self.stats_text = QLabel(self.title)
         self.alarm_label = QLabel("Alarm! Unwanted objects!")
@@ -73,6 +73,7 @@ class Interface(QWidget):
         for blob in self.blobs:
             blob.brick = None
             blob.confidence = None
+            blob.unwanted = False
 
     def togglePause(self):
         if self.pause_button.text() == "Pause":
@@ -145,8 +146,8 @@ class Interface(QWidget):
     def updateImage(self, cv_img):
         cv_img = cv_img[0:cv_img.shape[1], 0:cv_img.shape[1]]
         try:
-            classify = self.frame_counter % options.frames_per_sample == 0
-            processed_image, self.blobs, self.stats = self.process(cv_img, self.blobs, self.stats, classify)
+            do_classify = self.frame_counter % options.frames_per_sample == 0
+            processed_image, self.blobs, self.stats = self.process(cv_img, self.blobs, self.stats, do_classify)
             processed_image = self.updateBlobs(processed_image)
             processed_image = self.updateFps(processed_image)
 
